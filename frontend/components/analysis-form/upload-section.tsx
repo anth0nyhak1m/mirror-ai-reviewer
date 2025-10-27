@@ -1,6 +1,6 @@
 'use client';
 
-import { FileUpload } from '../../ui/file-upload';
+import { FileUpload } from '@/components/ui/file-upload';
 import { FileListItem } from './file-list-item';
 
 export interface UploadSectionProps {

@@ -1,7 +1,7 @@
 'use client';
 
 import { FileText, X, AlertTriangle } from 'lucide-react';
-import { Button } from '../../ui/button';
+import { Button } from '@/components/ui/button';
 import { formatFileSize } from './utils';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from '@/lib/constants';
 
