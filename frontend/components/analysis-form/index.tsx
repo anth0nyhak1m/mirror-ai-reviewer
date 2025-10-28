@@ -1,20 +1,21 @@
 'use client';
 
+import { StartAnalysisResponse } from '@/lib/generated-api';
 import { uploadOrchestrator } from '@/lib/services/upload-orchestrator';
-import { useRouter } from 'next/navigation';
 import { useForm } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
+import { AlertCircle, Loader2, Play } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import React from 'react';
+import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { CheckboxWithDescription } from '../ui/checkbox-with-description';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Button } from '../ui/button';
-import { UploadSection } from './upload-section';
-import { CheckboxWithDescription } from '../ui/checkbox-with-description';
-import { Play, Loader2, AlertCircle } from 'lucide-react';
 import { Progress } from '../ui/progress';
+import { RadioGroup, RadioGroupItemWithDescription } from '../ui/radio-group-with-description';
 import { AnalysisConfig } from '../wizard/types';
-import { StartAnalysisResponse } from '@/lib/generated-api';
+import { UploadSection } from './upload-section';
 
 export function AnalysisForm() {
   const router = useRouter();
@@ -25,16 +26,24 @@ export function AnalysisForm() {
 
   const form = useForm({
     defaultValues: {
+      reviewType: '',
       domain: '',
       targetAudience: '',
       documentPublicationDate: '',
       runLiteratureReview: false,
       runSuggestCitations: false,
-      runLiveReports: false,
     },
     validators: {
       onChange: ({ value }) => {
-        if (value.runLiteratureReview || value.runLiveReports) {
+        if (!value.reviewType) {
+          return {
+            fields: {
+              reviewType: 'Review type is required',
+            },
+          };
+        }
+
+        if (value.runLiteratureReview || value.reviewType === 'live-reports') {
           if (!value.documentPublicationDate) {
             return {
               fields: {
@@ -62,7 +71,14 @@ export function AnalysisForm() {
       analysisMutation.mutate({
         mainDocument,
         supportingDocuments,
-        config: value,
+        config: {
+          domain: value.domain,
+          targetAudience: value.targetAudience,
+          documentPublicationDate: value.documentPublicationDate,
+          runLiveReports: value.reviewType === 'live-reports',
+          runLiteratureReview: value.reviewType === 'peer-review' && value.runLiteratureReview,
+          runSuggestCitations: value.reviewType === 'peer-review' && value.runSuggestCitations,
+        },
       });
     },
   });
@@ -216,13 +232,137 @@ export function AnalysisForm() {
         form.handleSubmit();
       }}
     >
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold">
+            Review Type <span className="text-destructive">*</span>
+          </h2>
+          <p className="text-sm text-muted-foreground">Select the type of review to perform</p>
+        </div>
+        <form.Field name="reviewType">
+          {(field) => (
+            <RadioGroup
+              value={field.state.value}
+              onValueChange={(value) => field.handleChange(value)}
+              disabled={analysisMutation.isPending}
+              required={true}
+              className="grid grid-cols-2 gap-3"
+            >
+              <div className="space-y-2">
+                <RadioGroupItemWithDescription
+                  id="peer-review"
+                  value={field.state.value}
+                  label="Peer Review"
+                  description="Peer review analysis focusing on claim substantiation, evidence quality, and citation completeness."
+                  disabled={analysisMutation.isPending}
+                />
+                {field.state.value === 'peer-review' && (
+                  <>
+                    <form.Field name="runLiteratureReview">
+                      {(field) => (
+                        <CheckboxWithDescription
+                          id="run-literature-review"
+                          checked={field.state.value}
+                          onCheckedChange={(checked) => field.handleChange(checked === true)}
+                          label="Literature review (Optional)"
+                          description="Finds and recommends the most relevant, high-quality references (from published literature up to the document's publication date) that should be cited, using advanced web research and analysis of the document's content and bibliography."
+                          disabled={analysisMutation.isPending}
+                        />
+                      )}
+                    </form.Field>
+                    <form.Field name="runSuggestCitations">
+                      {(field) => (
+                        <CheckboxWithDescription
+                          id="run-suggest-citations"
+                          checked={field.state.value}
+                          onCheckedChange={(checked) => field.handleChange(checked === true)}
+                          label="Suggest citations (Optional)"
+                          description="Examines every claim in the document and recommends relevant citations, prioritizing supporting documents first and then incorporating literature review findings when available."
+                          disabled={analysisMutation.isPending}
+                        />
+                      )}
+                    </form.Field>
+                    <form.Subscribe selector={(state) => [state.values.runLiteratureReview]}>
+                      {(showWhenTrue) =>
+                        showWhenTrue.some((value) => !!value) && (
+                          <form.Field name="documentPublicationDate">
+                            {(field) => (
+                              <div className="space-y-1 pt-2">
+                                <Label htmlFor="publication-date">
+                                  Document Publication Date
+                                  <span className="text-destructive ml-1">*</span>
+                                </Label>
+                                <Input
+                                  id="publication-date"
+                                  type="date"
+                                  value={field.state.value}
+                                  onChange={(e) => field.handleChange(e.target.value)}
+                                  className={field.state.meta.errors.length > 0 ? 'border-destructive' : ''}
+                                  disabled={analysisMutation.isPending}
+                                  required={true}
+                                />
+                                {!field.state.meta.isValid && (
+                                  <p className="text-sm text-destructive">{field.state.meta.errors.join(', ')}</p>
+                                )}
+                              </div>
+                            )}
+                          </form.Field>
+                        )
+                      }
+                    </form.Subscribe>
+                  </>
+                )}
+              </div>
+              <div>
+                <RadioGroupItemWithDescription
+                  id="live-reports"
+                  value={field.state.value}
+                  label="Live Reports"
+                  description="Analyze whether claims remain accurate given newer literature published after the document's publication date."
+                  disabled={analysisMutation.isPending}
+                />
+                {field.state.value === 'live-reports' && (
+                  <>
+                    <form.Field name="documentPublicationDate">
+                      {(field) => (
+                        <div className="space-y-1 pt-2">
+                          <Label htmlFor="publication-date">
+                            Document Publication Date
+                            <span className="text-destructive ml-1">*</span>
+                          </Label>
+                          <Input
+                            id="publication-date"
+                            type="date"
+                            value={field.state.value}
+                            onChange={(e) => field.handleChange(e.target.value)}
+                            className={field.state.meta.errors.length > 0 ? 'border-destructive' : ''}
+                            disabled={analysisMutation.isPending}
+                            required={true}
+                          />
+                          {!field.state.meta.isValid && (
+                            <p className="text-sm text-destructive">{field.state.meta.errors.join(', ')}</p>
+                          )}
+                        </div>
+                      )}
+                    </form.Field>
+                  </>
+                )}
+              </div>
+
+              {!field.state.meta.isValid && (
+                <p className="text-sm text-destructive">{field.state.meta.errors.join(', ')}</p>
+              )}
+            </RadioGroup>
+          )}
+        </form.Field>
+      </div>
+
       <div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <UploadSection
             title="Main Document"
             description="Primary document for analysis"
-            badgeText="Required"
-            badgeClass="bg-primary/10 text-primary border border-primary/20"
+            required={true}
             onFilesChange={(files) => setMainDocument(files[0] || null)}
             multiple={false}
             files={mainDocument ? [mainDocument] : []}
@@ -233,8 +373,7 @@ export function AnalysisForm() {
           <UploadSection
             title="Supporting Documents"
             description="Documents used as references for the main document"
-            badgeText="Optional"
-            badgeClass="bg-muted/60 text-muted-foreground border border-muted"
+            required={false}
             onFilesChange={setSupportingDocuments}
             multiple={true}
             files={supportingDocuments}
@@ -242,79 +381,6 @@ export function AnalysisForm() {
             onRemoveFile={(index) => removeFile('supporting', index)}
           />
         </div>
-      </div>
-
-      {/* Analysis Options Section */}
-      <div className="space-y-4">
-        <div className="space-y-1">
-          <h2 className="text-xl font-semibold">Analysis Options</h2>
-          <p className="text-sm text-muted-foreground">Select which analysis features to run</p>
-        </div>
-        <div className="space-y-3">
-          <form.Field name="runLiteratureReview">
-            {(field) => (
-              <CheckboxWithDescription
-                id="run-literature-review"
-                checked={field.state.value}
-                onCheckedChange={(checked) => field.handleChange(checked === true)}
-                label="Run literature review"
-                description="Analyzes the document and bibliography to identify high-quality references that should be cited. Suggests both existing bibliography entries that should be cited in different places and new, high-quality references found via web research."
-                disabled={analysisMutation.isPending}
-              />
-            )}
-          </form.Field>
-          <form.Field name="runSuggestCitations">
-            {(field) => (
-              <CheckboxWithDescription
-                id="run-suggest-citations"
-                checked={field.state.value}
-                onCheckedChange={(checked) => field.handleChange(checked === true)}
-                label="Run suggest citations"
-                description="Analyzes each claim to identify missing citations based on RAND's Three Rules of Attribution. Suggests where ideas, facts, statistics, or exact words require attribution to support the document's claims."
-                disabled={analysisMutation.isPending}
-              />
-            )}
-          </form.Field>
-          <form.Field name="runLiveReports">
-            {(field) => (
-              <CheckboxWithDescription
-                id="run-live-reports"
-                checked={field.state.value}
-                onCheckedChange={(checked) => field.handleChange(checked === true)}
-                label="Run live reports"
-                description="Analyzes whether claims remain accurate given newer literature published after the document's publication date. Evaluates evidence strength and direction of newer research to assess if conclusions still hold."
-                disabled={analysisMutation.isPending}
-              />
-            )}
-          </form.Field>
-        </div>
-        <form.Subscribe selector={(state) => [state.values.runLiteratureReview, state.values.runLiveReports]}>
-          {(showWhenTrue) =>
-            showWhenTrue.some((value) => !!value) && (
-              <form.Field name="documentPublicationDate">
-                {(field) => (
-                  <div className="space-y-2 pt-2">
-                    <Label htmlFor="publication-date">
-                      Document Publication Date
-                      <span className="text-destructive ml-1">*</span>
-                    </Label>
-                    <Input
-                      id="publication-date"
-                      type="date"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className={field.state.meta.errors.length > 0 ? 'border-destructive' : ''}
-                      disabled={analysisMutation.isPending}
-                    />
-                    {!field.state.meta.isValid && (
-                      <p className="text-sm text-destructive">{field.state.meta.errors.join(', ')}</p>
-                    )}
-                  </div>
-                )}
-              </form.Field>
-            )
-          }
-        </form.Subscribe>
       </div>
 
       {/* Additional Context Section */}
@@ -367,7 +433,6 @@ export function AnalysisForm() {
         </div>
       </div>
 
-      {/* Submit Button */}
       <div className="flex justify-center">
         <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
           {([canSubmit]) => (

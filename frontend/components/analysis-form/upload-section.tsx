@@ -6,20 +6,18 @@ import { FileListItem } from './file-list-item';
 export interface UploadSectionProps {
   title: string;
   description: string;
-  badgeText: string;
-  badgeClass: string;
   onFilesChange: (files: File[]) => void;
   multiple: boolean;
   files: File[];
   fileType: 'main' | 'supporting';
+  required: boolean;
   onRemoveFile: (index?: number) => void;
 }
 
 export const UploadSection = ({
   title,
   description,
-  badgeText,
-  badgeClass,
+  required,
   onFilesChange,
   multiple,
   files,
@@ -29,10 +27,10 @@ export const UploadSection = ({
   <div className="space-y-4">
     <div className="space-y-1">
       <div className="flex items-center gap-3">
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${badgeClass}`}>
-          {badgeText}
-        </span>
+        <h3 className="text-lg font-semibold">
+          {title} {required && <span className="text-destructive">*</span>}
+          {!required && <span className="text-muted-foreground text-sm font-normal">(Optional)</span>}
+        </h3>
       </div>
       <p className="text-sm text-muted-foreground">{description}</p>
     </div>

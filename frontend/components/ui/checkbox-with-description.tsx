@@ -11,6 +11,7 @@ interface CheckboxWithDescriptionProps {
   onCheckedChange: (checked: boolean) => void;
   label: string;
   description: string;
+  bordered?: boolean;
   disabled?: boolean;
 }
 
@@ -20,14 +21,16 @@ export function CheckboxWithDescription({
   onCheckedChange,
   label,
   description,
+  bordered = false,
   disabled = false,
 }: CheckboxWithDescriptionProps) {
   return (
     <label
       htmlFor={id}
       className={cn(
-        'border rounded-lg p-4 cursor-pointer hover:bg-accent/50 transition-all block space-y-1',
-        checked ? 'border-primary border-1' : 'border',
+        'rounded-lg p-4 cursor-pointer hover:bg-accent/50 transition-all block space-y-1',
+        bordered && 'border',
+        checked && bordered ? 'border-primary border-1' : '',
         disabled && 'cursor-not-allowed opacity-50',
       )}
     >
@@ -49,9 +52,9 @@ export function CheckboxWithDescription({
             <CheckIcon className="size-3.5" />
           </CheckboxPrimitive.Indicator>
         </CheckboxPrimitive.Root>
-        <span className={cn('text-sm font-normal leading-none select-none', disabled && 'opacity-70')}>{label}</span>
+        <span className={cn('text-sm font-medium leading-none select-none', disabled && 'opacity-70')}>{label}</span>
       </div>
-      <p className="text-sm text-muted-foreground pl-7">{description}</p>
+      <p className="text-sm text-muted-foreground pl-6">{description}</p>
     </label>
   );
 }
