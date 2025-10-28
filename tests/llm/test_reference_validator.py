@@ -34,8 +34,6 @@ def _build_cases() -> list[AgentTestCase]:
                 agent=reference_validator_agent,
                 response_model=BibliographyValidationResponse,
                 prompt_kwargs={
-                    "domain_context": test_case.input.get("domain_context", ""),
-                    "audience_context": test_case.input.get("audience_context", ""),
                     "references": test_case.input.get("references", []),
                 },
                 expected_dict=test_case.expected_output,
