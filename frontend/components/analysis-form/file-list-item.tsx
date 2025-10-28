@@ -26,7 +26,7 @@ export const FileListItem = ({ file, type, onRemove }: FileListItemProps) => {
   const tagClass = isMain ? 'bg-primary/20 text-primary' : 'bg-muted/60 text-muted-foreground';
 
   return (
-    <div className={`flex items-center justify-between p-3 border rounded-lg ${bgClass}`}>
+    <div className={`flex items-center justify-between px-3 py-2 border rounded-lg ${bgClass}`}>
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <FileText className={`w-4 h-4 flex-shrink-0 ${iconClass}`} />
         <div className="min-w-0 flex-1">
