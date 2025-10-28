@@ -34,6 +34,4 @@ async def validate_references(
 
     logger.info(f"validate_references ({state.config.session_id}): done")
 
-    return {
-        "references_validated": validate_references_response.bibliography_item_validations
-    }
+    return {"references_validated": validate_references_response.reference_validations}
