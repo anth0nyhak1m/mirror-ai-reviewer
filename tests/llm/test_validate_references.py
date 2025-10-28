@@ -1,0 +1,59 @@
+from pathlib import Path
+
+import pytest
+
+from lib.agents.reference_validator import (
+    BibliographyValidationResponse,
+    reference_validator_agent,
+)
+from lib.models.agent_test_case import AgentTestCase
+from tests.datasets.loader import load_dataset
+
+TESTS_DIR = Path(__file__).parent.parent
+
+
+def _build_cases() -> list[AgentTestCase]:
+    # Load dataset from YAML
+    dataset_path = str(TESTS_DIR / "datasets" / "reference_validator.yaml")
+    dataset = load_dataset(dataset_path)
+
+    # Get test configuration from dataset, with defaults if not present
+    test_config = dataset.test_config
+    print("Test config:")
+    print(test_config)
+    print()
+    if test_config:
+        strict_fields = test_config.strict_fields or set()
+        llm_fields = test_config.llm_fields or set()
+        ignore_fields = test_config.ignore_fields or set()
+
+    cases: list[AgentTestCase] = []
+
+    for test_case in dataset.items:
+        cases.append(
+            AgentTestCase(
+                name=test_case.name,
+                agent=reference_validator_agent,
+                response_model=BibliographyValidationResponse,
+                prompt_kwargs={
+                    "domain_context": test_case.input["domain_context"],
+                    "audience_context": test_case.input["audience_context"],
+                    "references": test_case.input["references"],
+                },
+                expected_dict=test_case.expected_output,
+                strict_fields=strict_fields,
+                llm_fields=llm_fields,
+                ignore_fields=ignore_fields,
+            )
+        )
+
+    return cases
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("case", _build_cases(), ids=lambda case: case.name)
+async def test_reference_validator_agent_cases(case: AgentTestCase):
+    await case.run()
+    eval_result = await case.compare_results()
+
+    assert eval_result.passed, f"{case.name}: {eval_result.rationale}"
