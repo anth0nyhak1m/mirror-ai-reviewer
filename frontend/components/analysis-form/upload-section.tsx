@@ -26,8 +26,8 @@ export const UploadSection = ({
   fileType,
   onRemoveFile,
 }: UploadSectionProps) => (
-  <div className="space-y-6">
-    <div className="space-y-2">
+  <div className="space-y-4">
+    <div className="space-y-1">
       <div className="flex items-center gap-3">
         <h3 className="text-lg font-semibold">{title}</h3>
         <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${badgeClass}`}>
@@ -47,7 +47,7 @@ export const UploadSection = ({
     />
 
     {files.length > 0 && (
-      <div className="mt-4 space-y-2">
+      <div className="space-y-1 overflow-y-auto max-h-54">
         {files.map((file, index) => (
           <FileListItem
             key={multiple ? index : 'single'}

@@ -8,9 +8,9 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Checkbox } from '../ui/checkbox';
 import { Button } from '../ui/button';
 import { UploadSection } from './upload-section';
+import { CheckboxWithDescription } from '../ui/checkbox-with-description';
 import { Play, Loader2, AlertCircle } from 'lucide-react';
 import { Progress } from '../ui/progress';
 import { AnalysisConfig } from '../wizard/types';
@@ -22,21 +22,15 @@ export function AnalysisForm() {
   const [supportingDocuments, setSupportingDocuments] = React.useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = React.useState(0);
   const [processingStage, setProcessingStage] = React.useState<'idle' | 'uploading' | 'complete'>('idle');
-  const [formConfig, setFormConfig] = React.useState<AnalysisConfig>({
-    domain: '',
-    targetAudience: '',
-    documentPublicationDate: '',
-    runLiteratureReview: false,
-    runSuggestCitations: false,
-    runLiveReports: false,
-  });
 
   const form = useForm({
-    defaultValues: formConfig,
-    listeners: {
-      onChange: ({ formApi }) => {
-        setFormConfig(formApi.state.values);
-      },
+    defaultValues: {
+      domain: '',
+      targetAudience: '',
+      documentPublicationDate: '',
+      runLiteratureReview: false,
+      runSuggestCitations: false,
+      runLiveReports: false,
     },
     validators: {
       onChange: ({ value }) => {
@@ -51,6 +45,25 @@ export function AnalysisForm() {
         }
         return undefined;
       },
+    },
+    onSubmit: ({ value }) => {
+      if (!mainDocument) {
+        return;
+      }
+
+      const allFiles = [mainDocument, ...supportingDocuments];
+      const validation = uploadOrchestrator.validateFiles(allFiles);
+
+      if (!validation.valid && validation.errors) {
+        // Show validation errors
+        return;
+      }
+
+      analysisMutation.mutate({
+        mainDocument,
+        supportingDocuments,
+        config: value,
+      });
     },
   });
 
@@ -103,27 +116,6 @@ export function AnalysisForm() {
       const newFiles = supportingDocuments.filter((_, i) => i !== index);
       setSupportingDocuments(newFiles);
     }
-  };
-
-  const handleStartAnalysis = async () => {
-    if (!mainDocument) {
-      // Show error toast or inline error
-      return;
-    }
-
-    const allFiles = [mainDocument, ...supportingDocuments];
-    const validation = uploadOrchestrator.validateFiles(allFiles);
-
-    if (!validation.valid && validation.errors) {
-      // Show validation errors
-      return;
-    }
-
-    analysisMutation.mutate({
-      mainDocument,
-      supportingDocuments,
-      config: formConfig,
-    });
   };
 
   const getStageInfo = () => {
@@ -216,10 +208,15 @@ export function AnalysisForm() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* File Upload Section */}
+    <form
+      className="space-y-8"
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+    >
       <div>
-        <h2 className="text-2xl font-semibold mb-6">Upload Documents</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <UploadSection
             title="Main Document"
@@ -235,7 +232,7 @@ export function AnalysisForm() {
 
           <UploadSection
             title="Supporting Documents"
-            description="Additional references and context"
+            description="Documents used as references for the main document"
             badgeText="Optional"
             badgeClass="bg-muted/60 text-muted-foreground border border-muted"
             onFilesChange={setSupportingDocuments}
@@ -247,103 +244,56 @@ export function AnalysisForm() {
         </div>
       </div>
 
-      {/* Configuration Section */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-6">Analysis Configuration</h2>
-        <Card>
-          <CardHeader>
-            <CardTitle>Context & Settings</CardTitle>
-            <CardDescription>Provide context for more accurate analysis</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form.Field name="domain">
-              {(field) => (
-                <div className="space-y-2">
-                  <Label htmlFor="domain">Domain</Label>
-                  <Input
-                    id="domain"
-                    placeholder="e.g., Healthcare, Technology, Finance..."
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    disabled={analysisMutation.isPending}
-                  />
-                </div>
-              )}
-            </form.Field>
-            <form.Field name="targetAudience">
-              {(field) => (
-                <div className="space-y-2">
-                  <Label htmlFor="target-audience">Target Audience</Label>
-                  <Input
-                    id="target-audience"
-                    placeholder="e.g., General public, Experts, Students..."
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    disabled={analysisMutation.isPending}
-                  />
-                </div>
-              )}
-            </form.Field>
-            <div className="space-y-3 pt-2">
-              <form.Field name="runLiteratureReview">
-                {(field) => (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="run-literature-review"
-                      checked={field.state.value}
-                      onCheckedChange={(checked) => field.handleChange(checked === true)}
-                      disabled={analysisMutation.isPending}
-                    />
-                    <Label
-                      htmlFor="run-literature-review"
-                      className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Run literature review
-                    </Label>
-                  </div>
-                )}
-              </form.Field>
-              <form.Field name="runSuggestCitations">
-                {(field) => (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="run-suggest-citations"
-                      checked={field.state.value}
-                      onCheckedChange={(checked) => field.handleChange(checked === true)}
-                      disabled={analysisMutation.isPending}
-                    />
-                    <Label
-                      htmlFor="run-suggest-citations"
-                      className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Run suggest citations
-                    </Label>
-                  </div>
-                )}
-              </form.Field>
-              <form.Field name="runLiveReports">
-                {(field) => (
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="run-live-reports"
-                      checked={field.state.value}
-                      onCheckedChange={(checked) => field.handleChange(checked === true)}
-                      disabled={analysisMutation.isPending}
-                    />
-                    <Label
-                      htmlFor="run-live-reports"
-                      className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Run live reports
-                    </Label>
-                  </div>
-                )}
-              </form.Field>
-            </div>
-            {(form.state.values.runLiteratureReview || form.state.values.runLiveReports) && (
+      {/* Analysis Options Section */}
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold">Analysis Options</h2>
+          <p className="text-sm text-muted-foreground">Select which analysis features to run</p>
+        </div>
+        <div className="space-y-3">
+          <form.Field name="runLiteratureReview">
+            {(field) => (
+              <CheckboxWithDescription
+                id="run-literature-review"
+                checked={field.state.value}
+                onCheckedChange={(checked) => field.handleChange(checked === true)}
+                label="Run literature review"
+                description="Analyzes the document and bibliography to identify high-quality references that should be cited. Suggests both existing bibliography entries that should be cited in different places and new, high-quality references found via web research."
+                disabled={analysisMutation.isPending}
+              />
+            )}
+          </form.Field>
+          <form.Field name="runSuggestCitations">
+            {(field) => (
+              <CheckboxWithDescription
+                id="run-suggest-citations"
+                checked={field.state.value}
+                onCheckedChange={(checked) => field.handleChange(checked === true)}
+                label="Run suggest citations"
+                description="Analyzes each claim to identify missing citations based on RAND's Three Rules of Attribution. Suggests where ideas, facts, statistics, or exact words require attribution to support the document's claims."
+                disabled={analysisMutation.isPending}
+              />
+            )}
+          </form.Field>
+          <form.Field name="runLiveReports">
+            {(field) => (
+              <CheckboxWithDescription
+                id="run-live-reports"
+                checked={field.state.value}
+                onCheckedChange={(checked) => field.handleChange(checked === true)}
+                label="Run live reports"
+                description="Analyzes whether claims remain accurate given newer literature published after the document's publication date. Evaluates evidence strength and direction of newer research to assess if conclusions still hold."
+                disabled={analysisMutation.isPending}
+              />
+            )}
+          </form.Field>
+        </div>
+        <form.Subscribe selector={(state) => [state.values.runLiteratureReview, state.values.runLiveReports]}>
+          {(showWhenTrue) =>
+            showWhenTrue.some((value) => !!value) && (
               <form.Field name="documentPublicationDate">
                 {(field) => (
-                  <div className="space-y-2">
+                  <div className="space-y-2 pt-2">
                     <Label htmlFor="publication-date">
                       Document Publication Date
                       <span className="text-destructive ml-1">*</span>
@@ -362,32 +312,86 @@ export function AnalysisForm() {
                   </div>
                 )}
               </form.Field>
+            )
+          }
+        </form.Subscribe>
+      </div>
+
+      {/* Additional Context Section */}
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-xl font-semibold">Additional Context</h2>
+          <p className="text-sm text-muted-foreground">Provide context for more accurate analysis</p>
+        </div>
+        <div className="space-y-4">
+          <form.Field name="domain">
+            {(field) => (
+              <div className="space-y-2">
+                <Label htmlFor="domain">
+                  Domain <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+                </Label>
+                <Input
+                  id="domain"
+                  placeholder="e.g., Healthcare, Technology, Finance..."
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  disabled={analysisMutation.isPending}
+                />
+                <p className="text-sm text-muted-foreground">
+                  The subject area or field of expertise to contextualize the analysis. This helps tailor the evaluation
+                  to domain-specific standards and terminology.
+                </p>
+              </div>
             )}
-          </CardContent>
-        </Card>
+          </form.Field>
+          <form.Field name="targetAudience">
+            {(field) => (
+              <div className="space-y-2">
+                <Label htmlFor="target-audience">
+                  Target Audience <span className="text-muted-foreground text-xs font-normal">(Optional)</span>
+                </Label>
+                <Input
+                  id="target-audience"
+                  placeholder="e.g., General public, Experts, Students..."
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  disabled={analysisMutation.isPending}
+                />
+                <p className="text-sm text-muted-foreground">
+                  The intended readers of the document. Specifying the audience helps adjust the analysis to match
+                  appropriate complexity level and expectations.
+                </p>
+              </div>
+            )}
+          </form.Field>
+        </div>
       </div>
 
       {/* Submit Button */}
       <div className="flex justify-center">
-        <Button
-          onClick={handleStartAnalysis}
-          disabled={!mainDocument || analysisMutation.isPending}
-          size="lg"
-          className="min-w-48 gap-2 font-semibold"
-        >
-          {analysisMutation.isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Processing...
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4" />
-              Start Analysis
-            </>
+        <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+          {([canSubmit]) => (
+            <Button
+              type="submit"
+              disabled={!mainDocument || !canSubmit || analysisMutation.isPending}
+              size="lg"
+              className="min-w-48 gap-2 font-semibold"
+            >
+              {analysisMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4" />
+                  Start Analysis
+                </>
+              )}
+            </Button>
           )}
-        </Button>
+        </form.Subscribe>
       </div>
-    </div>
+    </form>
   );
 }
