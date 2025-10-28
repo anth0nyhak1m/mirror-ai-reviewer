@@ -51,10 +51,6 @@ class Addendum(BaseModel):
     summary: str = Field(
         description="2–3 sentence executive summary of salient updates"
     )
-    top_items: list[AddendumItem] = Field(
-        default_factory=list,
-        description="Highest-severity items, sorted (all highs; mediums as needed)",
-    )
     sections: AddendumSections
 
 
