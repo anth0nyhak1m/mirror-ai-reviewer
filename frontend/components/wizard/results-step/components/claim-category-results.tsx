@@ -4,9 +4,10 @@ import { LabeledValue } from '@/components/labeled-value';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ClaimCategorizationResponseWithClaimIndex } from '@/lib/generated-api';
-import { snakeCaseToTitleCase } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronRight, TagIcon } from 'lucide-react';
 import { useState } from 'react';
+import { ClaimCategoryBadge } from './claim-category-badge';
 
 interface ClaimCategoryResultsProps {
   claimCategory: ClaimCategorizationResponseWithClaimIndex;
@@ -44,7 +45,15 @@ export function ClaimCategoryResults({ claimCategory }: ClaimCategoryResultsProp
           </Button>
         </div>
 
-        <Badge variant="outline">{snakeCaseToTitleCase(claimCategory.claimCategory)}</Badge>
+        <ClaimCategoryBadge claimCategory={claimCategory.claimCategory} />
+        <Badge
+          variant="secondary"
+          className={cn(
+            claimCategory.needsExternalVerification ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800',
+          )}
+        >
+          {claimCategory.needsExternalVerification ? 'Needs external verification' : 'No external verification needed'}
+        </Badge>
       </div>
 
       {isExpanded && (
