@@ -201,7 +201,6 @@ if __name__ == "__main__":
             )
             return Addendum(
                 summary="Recent evidence undermines a foundational claim.",
-                top_items=[item],
                 sections=AddendumSections(background=[item]),
             )
 
