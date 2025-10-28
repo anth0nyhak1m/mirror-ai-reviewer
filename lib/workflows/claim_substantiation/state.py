@@ -15,6 +15,7 @@ from lib.agents.claim_needs_substantiation_checker import (
 from lib.agents.claim_verifier import ClaimSubstantiationResultWithClaimIndex
 from lib.agents.document_summarizer import DocumentSummary
 from lib.agents.evidence_weighter import EvidenceWeighterResponseWithClaimIndex
+from lib.agents.reference_validator import BibliographyItemValidation
 from lib.agents.literature_review import LiteratureReviewResponse
 from lib.agents.models import ChunkWithIndex
 from lib.agents.reference_extractor import BibliographyItem
@@ -165,6 +166,7 @@ class ClaimSubstantiatorState(BaseModel):
         description="The UUID of the workflow run (populated when workflow starts)",
     )
     references: Annotated[List[BibliographyItem], add] = []
+    references_validated: Optional[List[BibliographyItemValidation], add] = []
     chunks: Annotated[List[DocumentChunk], conciliate_chunks] = []
     errors: Annotated[List[WorkflowError], add] = Field(
         default_factory=list,

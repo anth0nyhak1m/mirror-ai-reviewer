@@ -109,6 +109,8 @@ def initialize_default_agents():
     from lib.agents.citation_suggester import citation_suggester_agent
     from lib.agents.evidence_weighter import evidence_weighter_agent
     from lib.agents.live_literature_review import live_literature_review_agent
+    from lib.agents.reference_extractor import reference_extractor_agent
+    from lib.agents.reference_validator import reference_validator_agent
 
     agent_registry.register(
         agent_type="claims",
@@ -156,6 +158,18 @@ def initialize_default_agents():
         agent_type="live_literature_review",
         agent=live_literature_review_agent,
         description="Review a document paragraph against the article bibliography and recent literature to propose citation updates",
+    )
+
+    agent_registry.register(
+        agent_type="references",
+        agent=reference_extractor_agent,
+        description="Extract the list of references from a document",
+    )
+
+    agent_registry.register(
+        agent_type="validate_references",
+        agent=reference_validator_agent,
+        description="Validate the list of references in a document by ensuring there is online presence from a legitimate source from each one.",
     )
 
     logger.info("Initialized default agent registry")
