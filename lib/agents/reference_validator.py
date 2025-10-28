@@ -100,11 +100,6 @@ Guidelines for checking the reference fields:
 
 Return one JSON object matching the schema exactly. 
 
-## Domain Context
-{domain_context}
-
-## Audience Context
-{audience_context}
 
 ## The list of references to validate
 {references}
@@ -162,8 +157,6 @@ if __name__ == "__main__":
     # Test cases for reference validation
     test_cases = [
         {
-            "domain_context": "Natural language processing and compositional generalization",
-            "audience_context": "Researchers in natural language processing and compositional generalization",
             "references": [
                 "Daniel Furrer, Jonathan Berant, Panupong Pasupat, Don Tuggener, Mark Cieliebak, and Mark Steedman. Compositional generalization in semantic parsing: Pre-training vs. specialized architectures. In Findings of the Association for Computational Linguistics: EMNLP, 2020.",
                 "Jonathan Herzig. Unlocking compositional generalization in pretrained models using intermediate representations. In EMNLP, 2021a.",
@@ -173,8 +166,6 @@ if __name__ == "__main__":
             ],
         },
         {
-            "domain_context": "Machine learning and systematic generalization",
-            "audience_context": "Researchers in machine learning and systematic generalization",
             "references": [
                 "Najoung Kim and Tal Linzen. Cogs: A compositional generalization challenge based on semantic interpretation. In NAACL, 2021.",
                 "Brenden M. Lake and Marco Baroni. Generalization without systematicity: On the compositional skills of sequence-to-sequence recurrent networks. ICML, 2018.",
