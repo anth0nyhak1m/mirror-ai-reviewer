@@ -16,7 +16,7 @@ dataset:
             - bibliography_field_validations.problem_type
             - bibliography_field_validations.current_value
             - bibliography_field_validations.suggested_value
-            - suggested_action
+          suggested_action:
       run_count: 1
     items:
       - name: "valid_rand_report"
