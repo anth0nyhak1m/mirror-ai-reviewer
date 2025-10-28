@@ -110,18 +110,6 @@ async def test_generate_addendum_smoke(monkeypatch):
     # Execute node
     result_delta = await generate_addendum(state)
 
-    # # print result_delta
-    import json
-
-    # print(json.dumps({"addendum": result_delta["addendum"].model_dump()}, indent=2))
-
-    import logging
-
-    logging.getLogger().setLevel(logging.INFO)
-    logging.info(
-        f"Addendum: {json.dumps(result_delta['addendum'].model_dump(), indent=2)}"
-    )
-
     # Validate
     assert "addendum" in result_delta
     addendum = result_delta["addendum"]
