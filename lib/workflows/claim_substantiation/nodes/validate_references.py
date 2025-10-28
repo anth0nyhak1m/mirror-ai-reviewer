@@ -26,8 +26,6 @@ async def validate_references(
 
     validate_references_response = await reference_validator_agent.ainvoke(
         {
-            "domain_context": state.config.domain or "",
-            "audience_context": state.config.target_audience or "",
             "references": state.references,
         }
     )
