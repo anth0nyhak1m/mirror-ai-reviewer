@@ -69,8 +69,7 @@ Instructions:
 1) For each input item, assign a severity using the rubric above.
 2) Create an action_summary for each item (max two sentences) that tells the editor what to do to the claim (e.g., update wording to reflect X; add citations Y and Z; qualify scope to ...).
 3) Populate sections by claim category: established_reported_knowledge → Background; methodology_procedural → Methodology; empirical_analytical_results → Results; inferential_interpretive_claims → Interpretation; others may be omitted from sections.
-4) In top_items, include all High severity items, then Medium if needed for context. Sort by severity then by highest impact.
-5) Keep the output concise; avoid repeating full evidence details already present in live reports.
+4) Keep the output concise; avoid repeating full evidence details already present in live reports.
 
 Document context:
 Domain: {domain_context}

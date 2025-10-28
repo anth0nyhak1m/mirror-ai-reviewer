@@ -99,7 +99,6 @@ async def test_generate_addendum_smoke(monkeypatch):
         )
         return Addendum(
             summary="Recent evidence undermines a foundational claim.",
-            top_items=[item],
             sections=AddendumSections(background=[item]),
         )
 
@@ -115,6 +114,3 @@ async def test_generate_addendum_smoke(monkeypatch):
     addendum = result_delta["addendum"]
     assert isinstance(addendum, Addendum)
     assert addendum.summary
-    assert (
-        addendum.top_items and addendum.top_items[0].severity == AddendumSeverity.HIGH
-    )
