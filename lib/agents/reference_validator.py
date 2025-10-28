@@ -20,6 +20,9 @@ from lib.services.openai import (
 )
 from lib.config.llm_models import gpt_5_model
 from lib.models.agent import AgentProtocol
+from lib.agents.reference_extractor import (
+    BibliographyItem,
+)
 
 
 class FieldProblemType(str, Enum):
@@ -34,11 +37,6 @@ class FieldCategory(str, Enum):
     TITLE = "title"
     PUBLISHER = "publisher"
     YEAR = "year"
-    # VOLUME = "volume" # TOOD: Not applicable for all references, especially preprints, books, etc.
-    # ISSUE = "issue"
-    # PAGES = "pages"
-    # DOI = "doi"
-    # URL = "url"
 
 
 class BibliographyFieldValidation(BaseModel):
@@ -49,7 +47,9 @@ class BibliographyFieldValidation(BaseModel):
 
 
 class BibliographyItemValidation(BaseModel):
-    original_reference: str = Field(description="Original bibliographic item text.")
+    original_reference: BibliographyItem = Field(
+        description="Original bibliographic item text."
+    )
     valid_reference: bool = Field(
         description="Whether the original reference is valid."
     )
@@ -151,7 +151,7 @@ class ReferenceValidatorAgent(AgentProtocol):
 
 
 reference_validator_agent = ReferenceValidatorAgent()
-print(reference_validator_agent.description)
+
 # %%
 if __name__ == "__main__":
     import asyncio
