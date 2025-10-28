@@ -11,9 +11,9 @@ async def validate_references(
 ) -> ClaimSubstantiatorState:
     logger.info(f"validate_references ({state.config.session_id}): starting")
 
-    if not state.config.run_literature_review:
+    if not state.config.run_live_reports:
         logger.info(
-            f"literature_review ({state.config.session_id}): skipping literature review (run_literature_review is False)"
+            f"validate_references ({state.config.session_id}): skipping validate references (run_live_reports is False)"
         )
         return {}
 
