@@ -19,9 +19,7 @@ def _build_cases() -> list[AgentTestCase]:
 
     # Get test configuration from dataset, with defaults if not present
     test_config = dataset.test_config
-    print("Test config:")
-    print(test_config)
-    print()
+
     if test_config:
         strict_fields = test_config.strict_fields or set()
         llm_fields = test_config.llm_fields or set()
