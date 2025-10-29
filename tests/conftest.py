@@ -129,6 +129,26 @@ def pytest_runtest_makereport(item, call):
 
             session_id = getattr(case, "session_id", None)
 
+            # Build summaries for strict and LLM evaluations if available
+            strict_summary = None
+            llm_summary = None
+
+            try:
+                if getattr(case, "strict_eval_results", None):
+                    strict_passed = all(r.passed for r in case.strict_eval_results)
+                    strict_rationale = case.strict_eval_results[0].rationale
+                    strict_summary = {
+                        "passed": strict_passed,
+                        "rationale": strict_rationale,
+                    }
+                if getattr(case, "llm_eval_results", None):
+                    llm_passed = all(r.passed for r in case.llm_eval_results)
+                    llm_rationale = case.llm_eval_results[0].rationale
+                    llm_summary = {"passed": llm_passed, "rationale": llm_rationale}
+            except Exception:
+                # Best-effort; do not break reporting if structure changes
+                pass
+
             # Serialize all data for xdist compatibility
             report.agent_test_case_data = serialize_for_xdist(
                 {
@@ -156,6 +176,8 @@ def pytest_runtest_makereport(item, call):
                         "run_count": case.run_count,
                     },
                     "evaluation_result": eval_result,
+                    "strict_summary": strict_summary,
+                    "llm_summary": llm_summary,
                     "session_id": session_id,
                 }
             )
@@ -171,13 +193,27 @@ def pytest_runtest_logreport(report):
     if hasattr(report, "agent_test_case_data"):
         _agent_test_case_data[report.nodeid] = report.agent_test_case_data
 
-        # Optionally print per-field comparison details after the test
+        # Optionally print summaries and per-field comparison details after the test
         if _PRINT_AGENT_FIELDS:
             data = report.agent_test_case_data
             eval_result = (data or {}).get("evaluation_result") or {}
+            strict_summary = (data or {}).get("strict_summary") or {}
+            llm_summary = (data or {}).get("llm_summary") or {}
             field_comparisons = eval_result.get("field_comparisons") or []
             if field_comparisons:
                 print(f"\n=== Agent Field Comparisons: {data.get('name')} ===")
+                # Print high-level summaries first
+                if strict_summary:
+                    status = "PASS" if strict_summary.get("passed") else "FAIL"
+                    print(
+                        f"Strict Summary: {status} \n  -> Rationale: {strict_summary.get('rationale')}"
+                    )
+                if llm_summary:
+                    status = "PASS" if llm_summary.get("passed") else "FAIL"
+                    print(
+                        f"LLM Summary: {status} \n  -> Rationale: {llm_summary.get('rationale')}"
+                    )
+
                 for fc in field_comparisons:
                     status = "PASS" if fc.get("passed") else "FAIL"
                     field_path = fc.get("field_path")
@@ -188,8 +224,10 @@ def pytest_runtest_logreport(report):
                     failed = fc.get("failed_instances")
                     rationale = fc.get("rationale")
                     print(
-                        f"[{status}] {field_path}  type={comp_type}  matched={passed}/{total}  strategy={strategy or '-'}\n  -> {rationale}"
+                        f"[{status}] {field_path}  type={comp_type}  matched={passed}/{total}  strategy={strategy or '-'}"
                     )
+                    print(f"  -> Passed: {passed}, Failed: {failed}")
+                    print(f"  -> Rationale: {rationale}")
 
                     if not fc.get("passed"):
                         expected_output = data.get("expected_output")
