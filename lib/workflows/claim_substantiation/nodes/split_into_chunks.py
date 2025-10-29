@@ -1,8 +1,5 @@
 import logging
 
-from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings
-from langchain.storage import LocalFileStore
-
 from lib.run_utils import call_maybe_async
 from lib.services.llm_text_splitter import LLMTextSplitter
 from lib.workflows.claim_substantiation.state import (

@@ -167,7 +167,7 @@ class ClaimSubstantiatorState(BaseModel):
         description="The UUID of the workflow run (populated when workflow starts)",
     )
     references: Annotated[List[BibliographyItem], add] = []
-    references_validated: Optional[List[BibliographyItemValidation], add] = []
+    references_validated: Annotated[List[BibliographyItemValidation], add] = []
     chunks: Annotated[List[DocumentChunk], conciliate_chunks] = []
     errors: Annotated[List[WorkflowError], add] = Field(
         default_factory=list,
