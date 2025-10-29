@@ -30,6 +30,7 @@ models/Claims.ts
 models/ConfidenceInRecommendation.ts
 models/DocumentChunkInput.ts
 models/DocumentChunkOutput.ts
+models/DocumentIssue.ts
 models/DocumentReferenceFactors.ts
 models/DocumentSummary.ts
 models/EvalPackageRequest.ts
@@ -54,6 +55,7 @@ models/ReferenceAlignmentLevel.ts
 models/ReferenceDirection.ts
 models/ReferenceType.ts
 models/RetrievedPassageInfo.ts
+models/SeverityEnum.ts
 models/StartAnalysisResponse.ts
 models/SubstantiationWorkflowConfig.ts
 models/ToulminClaim.ts
