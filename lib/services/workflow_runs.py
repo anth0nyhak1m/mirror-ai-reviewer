@@ -7,6 +7,7 @@ from lib.config.database import get_db
 from lib.models.workflow_run import WorkflowRun, WorkflowRunStatus
 from lib.workflows.claim_substantiation.checkpointer import get_checkpointer
 from lib.workflows.claim_substantiation.graph import build_claim_substantiator_graph
+from lib.workflows.claim_substantiation.nodes.rank_issues import rank_issues
 from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,13 @@ async def get_workflow_run_detailed(id: str) -> WorkflowRunDetailed:
             {"configurable": {"thread_id": run.langgraph_thread_id}}
         )
 
-    return WorkflowRunDetailed(run=run, state=_convert_state_snapshot(state))
+    state = _convert_state_snapshot(state)
+
+    # TODO: temporarily rank issues to be able to display them in the UI - add to graph later
+    if state is not None:
+        state.ranked_issues = rank_issues(state).get("ranked_issues", [])
+
+    return WorkflowRunDetailed(run=run, state=state)
 
 
 async def get_workflow_runs() -> List[WorkflowRun]:

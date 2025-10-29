@@ -2,7 +2,7 @@ import os
 from typing import Optional
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 load_dotenv()
 
@@ -27,6 +27,12 @@ class Config(BaseModel):
     POSTGRES_PASSWORD: str
 
     FILE_UPLOADS_MOUNT_PATH: str
+
+    FILE_CONVERTER: str = Field(
+        default="markitdown",
+        description="The converter to use for file to markdown conversion",
+        choices=["markitdown", "docling"],
+    )
 
     @model_validator(mode="after")
     def validate_openai_config(self):
@@ -64,6 +70,7 @@ config = Config(
     LANGFUSE_PUBLIC_KEY=os.getenv("LANGFUSE_PUBLIC_KEY"),
     LANGFUSE_PROJECT_ID=os.getenv("LANGFUSE_PROJECT_ID"),
     FILE_UPLOADS_MOUNT_PATH=os.getenv("FILE_UPLOADS_MOUNT_PATH", "uploads"),
+    FILE_CONVERTER=os.getenv("FILE_CONVERTER", "markitdown"),
     # Database Configuration
     DATABASE_URL=os.getenv("DATABASE_URL"),
     POSTGRES_HOST=os.getenv("POSTGRES_HOST"),
