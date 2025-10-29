@@ -28,6 +28,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/app \
     PATH="/app/.venv/bin:$PATH"
 
+# Install uv in runtime stage
+RUN pip install --no-cache-dir uv
+
 WORKDIR /app
 
 # Copy only the virtual environment from builder
