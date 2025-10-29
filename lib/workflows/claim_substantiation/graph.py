@@ -30,9 +30,8 @@ from lib.workflows.claim_substantiation.nodes.generate_live_reports import (
     generate_live_reports_analysis,
 )
 from lib.workflows.claim_substantiation.nodes.categorize_claims import categorize_claims
-from lib.workflows.claim_substantiation.nodes.generate_addendum import (
-    generate_addendum,
-)
+from lib.workflows.claim_substantiation.nodes.generate_addendum import generate_addendum
+from lib.workflows.claim_substantiation.nodes.validate_references import validate_references
 
 
 def finalize(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
@@ -69,6 +68,7 @@ def build_claim_substantiator_graph(
     )
     graph.add_node("detect_citations", detect_citations)
     graph.add_node("extract_references", extract_references)
+    graph.add_node("validate_references", validate_references)
     graph.add_node("check_claim_needs_substantiation", check_claim_needs_substantiation)
     graph.add_node("categorize_claims", categorize_claims)
 
@@ -102,8 +102,9 @@ def build_claim_substantiator_graph(
     # Core edges - main processing pipeline
     graph.add_edge("prepare_documents", "split_into_chunks")
     graph.add_edge("split_into_chunks", "extract_references")
+    graph.add_edge("extract_references", "validate_references")
+    graph.add_edge("validate_references", "detect_citations")
     graph.add_edge("split_into_chunks", "extract_claims")
-    graph.add_edge("extract_references", "detect_citations")
     # NOTE (2025-10-21): Currently going directly from extract_claims to check_claim_needs_substantiation
     # and then to verify claims;
     # Later we can likely remove the `check_claim_needs_substantiation` node and just go from  categorize_claims to verify_claims and a future verify_inferences
