@@ -84,10 +84,10 @@ class InferenceValidationResponse(BaseModel):
         description="Considering the Toulmin elements, whether the inference is valid or not"
     )
     rationale: str = Field(
-        description="The rationale for why you think the inference is valid or not. If the inference is not valid, explain why. If the inference is valid, explain why."
+        description="The rationale for why you think the inference is valid or not. If the inference is not valid, explain why. If the inference is valid, explain why. In only TWO sentences."
     )
     suggested_action: str = Field(
-        description="A suggested action to take if the inference is not valid. If the inference is valid, return 'No changes needed'."
+        description="A suggested action to take if the inference is not valid. If the inference is valid, return 'No changes needed'. In only TWO sentences."
     )
 
 
@@ -133,6 +133,8 @@ Reference: Purdue OWL - Toulmin Argument (for definitions and orientation): http
   - "qualifiers": list hedging or scope-limiting language associated with the claim.
   - "rebuttals": list acknowledged exceptions or counter-arguments present in the chunk.
   - "backing": list any additional support for the warrant (e.g., principles, cited studies, theoretical reasons) if present. Helps determine if the claim has been overstated or understated.
+- In only TWO sentences, explain why you think the inference is valid or not. 
+- In only TWO sentences, suggest an action to take if the inference is not valid. If the inference is valid, return 'No changes needed'.
 
 ## The full document that the chunk is a part of
 ```
