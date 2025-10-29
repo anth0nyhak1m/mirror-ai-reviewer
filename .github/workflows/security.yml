@@ -5,8 +5,8 @@ on:
     branches: ["**"]
 
 jobs:
-  trivy-scan:
-    name: Trivy Security Scan
+  scan-backend:
+    name: Trivy Security Scan - Backend
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,9 +18,6 @@ jobs:
       - name: Build Backend Image
         run: docker build -t ai-reviewer-api:${{ github.sha }} -f Dockerfile .
 
-      - name: Build Frontend Image
-        run: docker build -t ai-reviewer-app:${{ github.sha }} -f frontend/Dockerfile ./frontend
-
       - name: Scan Backend Image
         uses: aquasecurity/trivy-action@0.28.0
         with:
@@ -29,6 +26,19 @@ jobs:
           exit-code: 0
           scanners: vuln
 
+  scan-frontend:
+    name: Trivy Security Scan - Frontend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Frontend Image
+        run: docker build -t ai-reviewer-app:${{ github.sha }} -f frontend/Dockerfile ./frontend
+
       - name: Scan Frontend Image
         uses: aquasecurity/trivy-action@0.28.0
         with:
@@ -36,6 +46,16 @@ jobs:
           format: table
           exit-code: 0
           scanners: vuln
+
+  scan-postgres:
+    name: Trivy Security Scan - Postgres
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Scan PostgreSQL Image
         uses: aquasecurity/trivy-action@0.28.0
