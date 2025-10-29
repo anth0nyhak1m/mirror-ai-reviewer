@@ -20,6 +20,13 @@ import {
   DocumentChunkInputToJSON,
   DocumentChunkInputToJSONTyped,
 } from './DocumentChunkInput';
+import type { DocumentIssue } from './DocumentIssue';
+import {
+  DocumentIssueFromJSON,
+  DocumentIssueFromJSONTyped,
+  DocumentIssueToJSON,
+  DocumentIssueToJSONTyped,
+} from './DocumentIssue';
 import type { FileDocument } from './FileDocument';
 import {
   FileDocumentFromJSON,
@@ -142,6 +149,12 @@ export interface ClaimSubstantiatorStateInput {
    * @memberof ClaimSubstantiatorStateInput
    */
   literatureReview?: LiteratureReviewResponseInput | null;
+  /**
+   * Ranked list of document issues with severity levels
+   * @type {Array<DocumentIssue>}
+   * @memberof ClaimSubstantiatorStateInput
+   */
+  rankedIssues?: Array<DocumentIssue>;
 }
 
 /**
@@ -186,6 +199,8 @@ export function ClaimSubstantiatorStateInputFromJSONTyped(
         : (json['live_reports_analysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexInputFromJSON),
     literatureReview:
       json['literature_review'] == null ? undefined : LiteratureReviewResponseInputFromJSON(json['literature_review']),
+    rankedIssues:
+      json['ranked_issues'] == null ? undefined : (json['ranked_issues'] as Array<any>).map(DocumentIssueFromJSON),
   };
 }
 
@@ -221,5 +236,7 @@ export function ClaimSubstantiatorStateInputToJSONTyped(
         ? undefined
         : (value['liveReportsAnalysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexInputToJSON),
     literature_review: LiteratureReviewResponseInputToJSON(value['literatureReview']),
+    ranked_issues:
+      value['rankedIssues'] == null ? undefined : (value['rankedIssues'] as Array<any>).map(DocumentIssueToJSON),
   };
 }

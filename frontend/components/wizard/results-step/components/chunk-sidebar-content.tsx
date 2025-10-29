@@ -1,23 +1,30 @@
-import { ChunkReevaluationResponse, ClaimSubstantiatorStateOutput } from '@/lib/generated-api';
+import { Badge } from '@/components/ui/badge';
+import { ChunkReevaluationResponse, ClaimSubstantiatorStateOutput, DocumentIssue } from '@/lib/generated-api';
+import { X } from 'lucide-react';
 import { ChunkAnalysisCard } from './chunk-analysis-card';
 import { ChunkEvalGenerator } from './chunk-eval-generator';
 import { ChunkReevaluateControl } from './chunk-reevaluate-control';
 import { ChunkStatusBadge, useShouldShowStatusBadge } from './chunk-status-badge';
 import { ClaimAnalysisCard } from './claim-analysis-card';
+import { DocumentIssuesList } from './document-issues-list';
 import { ErrorsCard } from './errors-card';
 
 export interface ChunkSidebarContentProps {
   results: ClaimSubstantiatorStateOutput;
   chunkIndex: number | null;
   isWorkflowRunning: boolean;
+  onSelectIssue: (issue: DocumentIssue) => void;
   onChunkReevaluation: (response: ChunkReevaluationResponse) => void;
+  onClearChunkSelection: () => void;
 }
 
 export function ChunkSidebarContent({
   results,
   chunkIndex,
   isWorkflowRunning,
+  onSelectIssue,
   onChunkReevaluation,
+  onClearChunkSelection,
 }: ChunkSidebarContentProps) {
   const chunkErrors = results.errors?.filter((error) => error.chunkIndex === chunkIndex) || [];
   const references = results.references || [];
@@ -30,6 +37,7 @@ export function ChunkSidebarContent({
   const citationSuggestions = chunk?.citationSuggestions || [];
   const liveReportsAnalysis = chunk?.liveReportsAnalysis || [];
   const claimCategories = chunk?.claimCategories || [];
+  const issues = results.rankedIssues?.filter((issue) => issue.chunkIndex === chunkIndex) || [];
 
   if (!chunk) {
     return null;
@@ -37,11 +45,25 @@ export function ChunkSidebarContent({
 
   return (
     <div className="space-y-2">
-      {shouldShowStatusBadge && <ChunkStatusBadge chunk={chunk} isWorkflowRunning={isWorkflowRunning} />}
+      <div className="flex items-center gap-2">
+        {shouldShowStatusBadge && <ChunkStatusBadge chunk={chunk} isWorkflowRunning={isWorkflowRunning} />}
+
+        <Badge variant="secondary" className="gap-1 pl-2.5 pr-1">
+          Chunk #{chunk.chunkIndex}
+          <button
+            onClick={onClearChunkSelection}
+            className="ml-0.5 rounded-sm hover:bg-muted-foreground/20 p-0.5 cursor-pointer"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </Badge>
+      </div>
 
       {chunkErrors.length > 0 && <ErrorsCard errors={chunkErrors} />}
 
       <div className="space-y-2">
+        <DocumentIssuesList issues={issues} onSelect={onSelectIssue} />
+
         {claims.map((claim, index) => (
           <ClaimAnalysisCard
             key={index}

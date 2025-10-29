@@ -7,7 +7,6 @@ from lib.workflows.claim_substantiation.state import (
     DocumentChunk,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
