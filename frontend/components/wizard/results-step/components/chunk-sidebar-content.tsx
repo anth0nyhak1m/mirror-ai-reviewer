@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { ChunkReevaluationResponse, ClaimSubstantiatorStateOutput, DocumentIssue } from '@/lib/generated-api';
-import { X } from 'lucide-react';
+import { ChevronDown, ChevronRight, X } from 'lucide-react';
 import { ChunkAnalysisCard } from './chunk-analysis-card';
 import { ChunkEvalGenerator } from './chunk-eval-generator';
 import { ChunkReevaluateControl } from './chunk-reevaluate-control';
@@ -8,6 +8,8 @@ import { ChunkStatusBadge, useShouldShowStatusBadge } from './chunk-status-badge
 import { ClaimAnalysisCard } from './claim-analysis-card';
 import { DocumentIssuesList } from './document-issues-list';
 import { ErrorsCard } from './errors-card';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 
 export interface ChunkSidebarContentProps {
   results: ClaimSubstantiatorStateOutput;
@@ -39,6 +41,8 @@ export function ChunkSidebarContent({
   const claimCategories = chunk?.claimCategories || [];
   const issues = results.rankedIssues?.filter((issue) => issue.chunkIndex === chunkIndex) || [];
 
+  const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
+
   if (!chunk) {
     return null;
   }
@@ -61,38 +65,60 @@ export function ChunkSidebarContent({
 
       {chunkErrors.length > 0 && <ErrorsCard errors={chunkErrors} />}
 
-      <div className="space-y-2">
-        <DocumentIssuesList issues={issues} onSelect={onSelectIssue} />
+      <DocumentIssuesList issues={issues} onSelect={onSelectIssue} />
 
-        {claims.map((claim, index) => (
-          <ClaimAnalysisCard
-            key={index}
-            claim={claim}
-            claimCategory={claimCategories.find((c) => c.claimIndex === index)}
-            commonKnowledgeResult={claimCommonKnowledgeResults.find((c) => c.claimIndex === index)}
-            substantiation={substantiations.find((s) => s.claimIndex === index)}
-            citationSuggestion={citationSuggestions.find((c) => c.claimIndex === index)}
-            liveReportsAnalysis={liveReportsAnalysis.find((l) => l.claimIndex === index)}
-            claimIndex={index}
-            totalClaims={claims.length}
-            references={references}
-            supportingFiles={results.supportingFiles || []}
-            workflowRunId={results.workflowRunId ?? undefined}
-            chunkIndex={chunkIndex ?? undefined}
-          />
-        ))}
+      {issues.length === 0 && (
+        <div className="text-sm text-muted-foreground italic">No issues found in this chunk.</div>
+      )}
+
+      <div className="flex items-center gap-2 justify-end">
+        <Button variant="outline" size="xs" onClick={() => setShowAdvancedAnalysis(!showAdvancedAnalysis)}>
+          {showAdvancedAnalysis ? (
+            <>
+              <ChevronDown />
+              Hide full analysis results
+            </>
+          ) : (
+            <>
+              <ChevronRight />
+              Show full analysis results
+            </>
+          )}
+        </Button>
       </div>
 
-      <ChunkAnalysisCard chunk={chunk} references={references} supportingFiles={supportingFiles} />
+      {showAdvancedAnalysis && (
+        <>
+          {claims.map((claim, index) => (
+            <ClaimAnalysisCard
+              key={index}
+              claim={claim}
+              claimCategory={claimCategories.find((c) => c.claimIndex === index)}
+              commonKnowledgeResult={claimCommonKnowledgeResults.find((c) => c.claimIndex === index)}
+              substantiation={substantiations.find((s) => s.claimIndex === index)}
+              citationSuggestion={citationSuggestions.find((c) => c.claimIndex === index)}
+              liveReportsAnalysis={liveReportsAnalysis.find((l) => l.claimIndex === index)}
+              claimIndex={index}
+              totalClaims={claims.length}
+              references={references}
+              supportingFiles={results.supportingFiles || []}
+              workflowRunId={results.workflowRunId ?? undefined}
+              chunkIndex={chunkIndex ?? undefined}
+            />
+          ))}
 
-      <ChunkReevaluateControl
-        chunkIndex={chunk.chunkIndex}
-        originalState={results}
-        onReevaluation={onChunkReevaluation}
-        sessionId={results.config.sessionId}
-      />
+          <ChunkAnalysisCard chunk={chunk} references={references} supportingFiles={supportingFiles} />
 
-      <ChunkEvalGenerator chunkIndex={chunk.chunkIndex} originalState={results} />
+          <ChunkReevaluateControl
+            chunkIndex={chunk.chunkIndex}
+            originalState={results}
+            onReevaluation={onChunkReevaluation}
+            sessionId={results.config.sessionId}
+          />
+
+          <ChunkEvalGenerator chunkIndex={chunk.chunkIndex} originalState={results} />
+        </>
+      )}
     </div>
   );
 }
