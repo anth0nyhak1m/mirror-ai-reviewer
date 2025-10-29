@@ -31,7 +31,12 @@ from lib.workflows.claim_substantiation.nodes.generate_live_reports import (
 )
 from lib.workflows.claim_substantiation.nodes.categorize_claims import categorize_claims
 from lib.workflows.claim_substantiation.nodes.generate_addendum import generate_addendum
-from lib.workflows.claim_substantiation.nodes.validate_references import validate_references
+from lib.workflows.claim_substantiation.nodes.validate_inferences import (
+    validate_inferences,
+)
+from lib.workflows.claim_substantiation.nodes.validate_references import (
+    validate_references,
+)
 
 
 def finalize(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
@@ -71,6 +76,7 @@ def build_claim_substantiator_graph(
     graph.add_node("validate_references", validate_references)
     graph.add_node("check_claim_needs_substantiation", check_claim_needs_substantiation)
     graph.add_node("categorize_claims", categorize_claims)
+    graph.add_node("validate_inferences", validate_inferences)
 
     # Conditional verify node based on RAG setting
     if use_rag:
@@ -113,6 +119,9 @@ def build_claim_substantiator_graph(
     graph.add_edge("check_claim_needs_substantiation", "verify_claims")
     graph.add_edge("detect_citations", "verify_claims")
 
+    # Inference validation runs in parallel with verify_claims after categorization
+    graph.add_edge("categorize_claims", "validate_inferences")
+
     # RAG indexing edge
     if use_rag:
         graph.add_edge("prepare_documents", "index_supporting_documents")
@@ -127,6 +136,7 @@ def build_claim_substantiator_graph(
     if run_suggest_citations:
         graph.add_edge("prepare_documents", "summarize_supporting_documents")
         graph.add_edge("verify_claims", "suggest_citations")
+        graph.add_edge("validate_inferences", "suggest_citations")
         graph.add_edge("summarize_supporting_documents", "suggest_citations")
         if run_literature_review:
             graph.add_edge("literature_review", "suggest_citations")
@@ -135,6 +145,7 @@ def build_claim_substantiator_graph(
     # Keep it downstream of verify_claims to ensure claims/citations/references exist
     if run_live_reports:
         graph.add_edge("verify_claims", "generate_live_reports_analysis")
+        graph.add_edge("validate_inferences", "generate_live_reports_analysis")
         graph.add_edge("generate_live_reports_analysis", "generate_addendum")
 
     # Finalize/join node to allow parallel branches to complete
@@ -148,7 +159,12 @@ def build_claim_substantiator_graph(
     elif run_live_reports:
         graph.set_finish_point("generate_addendum")
     else:
-        graph.set_finish_point("verify_claims")
+        # When no downstream nodes exist, create a finalize node to wait for both
+        # verify_claims and validate_inferences to complete in parallel
+        graph.add_node("finalize", finalize)
+        graph.add_edge("verify_claims", "finalize")
+        graph.add_edge("validate_inferences", "finalize")
+        graph.set_finish_point("finalize")
 
     return graph
 
