@@ -30,6 +30,7 @@ dependencies = [
     "pytest-repeat>=0.9.4",
     "xxhash>=3.5.0",
     "langchain-text-splitters>=1.0.0",
+    "nltk>=3.8.1",
     "docling>=2.58.0",
 ]
 
