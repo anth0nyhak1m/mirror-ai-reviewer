@@ -52,31 +52,11 @@ def get_chunker_result_as_langchain_documents(
 
 def split_into_paragraphs(text: str) -> List[str]:
     """
-    Split text into paragraphs based on double newlines or markdown heading patterns.
-    Preserves markdown headings as separate paragraphs.
+    Split text into paragraphs based on single newlines.
+    Each line becomes its own paragraph.
     """
-    # Split on double newlines first
-    paragraphs = re.split(r"\n\s*\n", text)
-
-    # Further split paragraphs that contain markdown headings
-    final_paragraphs = []
-    for paragraph in paragraphs:
-        paragraph = paragraph.strip()
-        if not paragraph:
-            continue
-
-        # Check if paragraph starts with a markdown heading
-        if re.match(r"^#{1,6}\s+", paragraph):
-            final_paragraphs.append(paragraph)
-        else:
-            # Split on single newlines that are followed by markdown headings
-            parts = re.split(r"\n(?=#{1,6}\s+)", paragraph)
-            for part in parts:
-                part = part.strip()
-                if part:
-                    final_paragraphs.append(part)
-
-    return final_paragraphs
+    # Split on single newlines - each line becomes a paragraph
+    return [line.strip() for line in text.split("\n") if line.strip()]
 
 
 def split_paragraph_into_sentences(paragraph: str) -> List[str]:
@@ -84,7 +64,7 @@ def split_paragraph_into_sentences(paragraph: str) -> List[str]:
     Split a paragraph into sentences using NLTK's sentence tokenizer.
     Handles special cases for markdown formatting.
     """
-    # Check if this is a markdown heading
+    # Check if this is a markdown heading (standalone)
     if re.match(r"^#{1,6}\s+", paragraph):
         return [paragraph.strip()]
 
@@ -92,8 +72,41 @@ def split_paragraph_into_sentences(paragraph: str) -> List[str]:
     if paragraph.startswith("```"):
         return [paragraph.strip()]
 
-    # For list items, we still want to split into sentences
-    # but preserve the list marker
+    # Reference-style numbered entries: split multiple references into separate chunks
+    lines = [ln.strip() for ln in paragraph.split("\n") if ln.strip()]
+    if any(re.match(r"^\d+\.\s+", ln) for ln in lines):
+        # This paragraph contains numbered references
+        chunks = []
+        for line in lines:
+            if re.match(r"^\d+\.\s+", line):
+                # This is a numbered reference item - keep as one chunk
+                chunks.append(line)
+            else:
+                # Continuation line - attach to previous chunk
+                if chunks:
+                    chunks[-1] = f"{chunks[-1]} {line}"
+                else:
+                    chunks.append(line)
+        return chunks
+
+    # Detect unnumbered citations/references
+    # Must start VERY specifically like a citation
+    has_year = re.search(r"\b(19|20)\d{2}\b", paragraph)
+    starts_like_citation = (
+        # Author format: "LastName, FirstInitial."
+        re.match(r"^[A-Z][a-z]+,\s+[A-Z]\.", paragraph)
+        or
+        # Organization with year early: "Org Name (Acronym). (Year)"
+        (
+            re.match(r"^[A-Z].*\(.*\)\.\s*\(", paragraph)
+            and len(paragraph.split()[0]) > 2
+        )
+    )
+
+    if has_year and starts_like_citation:
+        return [paragraph.strip()]
+
+    # For list items (-, *) we want sentence-level chunks, while preserving marker on first sentence
     if (
         paragraph.startswith("- ")
         or paragraph.startswith("* ")
@@ -131,7 +144,15 @@ def split_paragraph_into_sentences(paragraph: str) -> List[str]:
     # Clean up sentences (remove extra whitespace)
     cleaned_sentences = [s.strip() for s in sentences if s.strip()]
 
-    return cleaned_sentences
+    # Post-process: merge author with adjacent year in parentheses
+    merged: List[str] = []
+    for s in cleaned_sentences:
+        if merged and re.match(r"^\(\d{4}\)$", s):
+            merged[-1] = f"{merged[-1]} {s}"
+        else:
+            merged.append(s)
+
+    return merged
 
 
 class DocumentChunkerAgent(AgentProtocol):
