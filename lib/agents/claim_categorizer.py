@@ -22,28 +22,18 @@ The categories are:
 """
 from __future__ import annotations
 
-from enum import Enum
-
 from langchain.chat_models import init_chat_model
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableConfig
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field
 
+from lib.agents.models import ClaimCategory
 from lib.config.llm_models import gpt_5_model
 from lib.models.agent import DEFAULT_LLM_TIMEOUT, AgentProtocol
 
 # =========================
 #  Pydantic data contracts
 # =========================
-
-
-class ClaimCategory(str, Enum):
-    ESTABLISHED = "established_reported_knowledge"
-    METHODOLOGY = "methodology_procedural"
-    RESULTS = "empirical_analytical_results"
-    INTERPRETATION = "inferential_interpretive_claims"
-    META = "meta_structural_evaluative"
-    OTHER = "other"
 
 
 class ClaimCategorizationResponse(BaseModel):

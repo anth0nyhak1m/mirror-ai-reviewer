@@ -1,11 +1,12 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
-import { ChunkReevaluationResponse, ClaimSubstantiatorStateOutput } from '@/lib/generated-api';
+import { ChunkReevaluationResponse, ClaimSubstantiatorStateOutput, DocumentIssue } from '@/lib/generated-api';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { ChunkSidebarContent } from '../components/chunk-sidebar-content';
+import { DocumentIssuesList } from '../components/document-issues-list';
 import { DocumentReconstructor } from '../components/document-reconstructor';
 import { ErrorsCard } from '../components/errors-card';
 
@@ -17,6 +18,7 @@ interface DocumentExplorerTabProps {
 
 export function DocumentExplorerTab({ results, onChunkReevaluation, isProcessing = false }: DocumentExplorerTabProps) {
   const errors = results.errors || [];
+  const issues = results.rankedIssues || [];
   const workflowErrors = errors.filter((error) => error.chunkIndex === null);
   const hasChunks = (results.chunks?.length || 0) > 0;
 
@@ -45,6 +47,14 @@ export function DocumentExplorerTab({ results, onChunkReevaluation, isProcessing
     );
   }
 
+  const handleSelectIssue = (issue: DocumentIssue) => {
+    if (issue.chunkIndex !== undefined && issue.chunkIndex !== null) {
+      setSelectedChunkIndex(issue.chunkIndex);
+    } else {
+      setSelectedChunkIndex(null);
+    }
+  };
+
   return (
     <div className="space-y-2">
       {workflowErrors.length > 0 && <ErrorsCard errors={workflowErrors} />}
@@ -59,9 +69,9 @@ export function DocumentExplorerTab({ results, onChunkReevaluation, isProcessing
         </div>
         <div
           ref={sidebarRef}
-          className="col-span-5 bg-muted p-4 rounded-lg sticky top-0 text-sm overflow-auto max-h-[calc(100vh-2rem)] pb-40"
+          className="col-span-5 bg-muted/50 p-4 rounded-lg sticky top-0 text-sm overflow-auto max-h-[calc(100vh-2rem)] pb-40 space-y-4"
         >
-          {!selectedChunk && (
+          {isProcessing && (
             <Card>
               <CardContent className="flex flex-col justify-center space-y-2 py-8 text-center items-center">
                 <Image
@@ -71,33 +81,28 @@ export function DocumentExplorerTab({ results, onChunkReevaluation, isProcessing
                   height={100}
                   className="mb-8"
                 />
-                {isProcessing && (
-                  <>
-                    <div className="flex items-center justify-center gap-2">
-                      <Loader2 className="h-6 w-6 animate-spin" />
-                      <p className="font-medium text-xl">Analyzing document</p>
-                    </div>
-                    <p className="text-gray-600">
-                      You can leave this page and come back later to view the results as the analysis runs in the
-                      background.
-                    </p>
-                  </>
-                )}
-                {!isProcessing && (
-                  <>
-                    <p className="font-medium text-xl">Select a paragraph</p>
-                    <p className="text-gray-600">Select a paragraph to view analysis results</p>
-                  </>
-                )}
+                <div className="flex items-center justify-center gap-2">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <p className="font-medium text-xl">Analyzing document</p>
+                </div>
+                <p className="text-gray-600">
+                  You can leave this page and come back later to view the results as the analysis runs in the
+                  background.
+                </p>
               </CardContent>
             </Card>
           )}
+
+          {!selectedChunk && <DocumentIssuesList issues={issues} onSelect={handleSelectIssue} />}
+
           {selectedChunk && (
             <ChunkSidebarContent
               results={results}
               chunkIndex={selectedChunkIndex}
               isWorkflowRunning={isProcessing}
               onChunkReevaluation={onChunkReevaluation}
+              onSelectIssue={handleSelectIssue}
+              onClearChunkSelection={() => setSelectedChunkIndex(null)}
             />
           )}
         </div>
