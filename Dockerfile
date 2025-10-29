@@ -1,28 +1,46 @@
-FROM python:3.13-slim as base
+FROM python:3.13-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# Install build dependencies in a single layer and clean up immediately
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && pip install --no-cache-dir uv \
+    && apt-get purge -y build-essential \
+    && apt-get autoremove -y \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+WORKDIR /app
+
+# Copy dependency files and install
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen
+
+# Runtime stage - minimal base image
+FROM python:3.13-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-RUN pip install uv
+    PATH="/app/.venv/bin:$PATH"
 
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
+# Copy only the virtual environment from builder
+COPY --from=builder /app/.venv /app/.venv
 
-RUN uv sync --frozen
-
+# Copy application code
 COPY . .
 
-RUN useradd --create-home --shell /bin/bash app \
+# Create user and set permissions
+RUN useradd --create-home --shell /bin/bash --no-log-init app \
     && mkdir -p /app/uploads \
     && chown -R app:app /app
+
 USER app
 
 EXPOSE 8000
