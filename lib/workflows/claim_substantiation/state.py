@@ -26,6 +26,7 @@ from lib.services.file import FileDocument
 
 # Workflow models
 from lib.workflows.models import WorkflowError
+from lib.agents.addendum_generator import Addendum
 
 
 class SubstantiationWorkflowConfig(BaseModel):
@@ -183,6 +184,9 @@ class ClaimSubstantiatorState(BaseModel):
         default_factory=list, description="Live reports analysis results by chunk index"
     )
     literature_review: Optional[LiteratureReviewResponse] = None
+    addendum: Optional[Addendum] = Field(
+        default=None, description="Structured addendum generated from live reports"
+    )
 
     def get_paragraph_chunks(self, paragraph_index: int) -> List[DocumentChunk]:
         return [
@@ -202,7 +206,6 @@ class ChunkReevaluationRequest(BaseModel):
     )
     agents_to_run: List[str] = Field(
         description="List of agent types to run on the chunk",
-        example=["claims", "citations"],
     )
     original_state: ClaimSubstantiatorState = Field(
         description="The original workflow state containing the document and chunks"
