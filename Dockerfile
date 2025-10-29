@@ -33,16 +33,17 @@ RUN pip install --no-cache-dir uv
 
 WORKDIR /app
 
-# Copy only the virtual environment from builder
-COPY --from=builder /app/.venv /app/.venv
+# Create user first so we can use --chown in COPY commands
+RUN useradd --create-home --shell /bin/bash --no-log-init app
 
-# Copy application code
-COPY . .
+# Copy only the virtual environment from builder with proper ownership
+COPY --from=builder --chown=app:app /app/.venv /app/.venv
 
-# Create user and set permissions
-RUN useradd --create-home --shell /bin/bash --no-log-init app \
-    && mkdir -p /app/uploads \
-    && chown -R app:app /app
+# Copy application code with proper ownership
+COPY --chown=app:app . .
+
+# Create uploads directory with proper ownership
+RUN mkdir -p /app/uploads && chown app:app /app/uploads
 
 USER app
 
