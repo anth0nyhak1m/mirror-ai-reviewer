@@ -69,14 +69,14 @@ export function SubstantiationResults({
       </div>
 
       {isExpanded && (
-        <div className="space-y-4">
+        <div className="space-y-2">
           <LabeledValue label="Evidence Alignment">{substantiation.evidenceAlignment}</LabeledValue>
           <LabeledValue label="Rationale">{substantiation.rationale}</LabeledValue>
           <LabeledValue label="Feedback to resolve">{substantiation.feedback}</LabeledValue>
 
           {/* Citation-Based Evidence Section */}
           {hasCitationBasedEvidence && (
-            <div className="space-y-2">
+            <div className="mt-4">
               <Accordion type="single" collapsible defaultValue="citation-based">
                 <AccordionItem value="citation-based" className="border rounded-md px-3">
                   <AccordionTrigger className="text-sm font-medium hover:no-underline">

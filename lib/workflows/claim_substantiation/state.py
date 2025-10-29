@@ -1,4 +1,5 @@
 from datetime import date
+from enum import StrEnum
 from operator import add
 from typing import Annotated, Dict, List, Optional
 
@@ -17,7 +18,7 @@ from lib.agents.document_summarizer import DocumentSummary
 from lib.agents.evidence_weighter import EvidenceWeighterResponseWithClaimIndex
 from lib.agents.reference_validator import BibliographyItemValidation
 from lib.agents.literature_review import LiteratureReviewResponse
-from lib.agents.models import ChunkWithIndex
+from lib.agents.models import ChunkWithIndex, ClaimCategory
 from lib.agents.reference_extractor import BibliographyItem
 from lib.agents.toulmin_claim_extractor import ToulminClaimResponse
 
@@ -155,6 +156,40 @@ class ClaimSubstantiationChunk(BaseModel):
     substantiations: List[ClaimSubstantiationResultWithClaimIndex]
 
 
+class SeverityEnum(StrEnum):
+    NONE = "none"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
+    def sort_index(self) -> int:
+        return {
+            self.NONE: 0,
+            self.LOW: 1,
+            self.MEDIUM: 2,
+            self.HIGH: 3,
+        }[self]
+
+
+class DocumentIssue(BaseModel):
+    title: str = Field(description="The title of the issue")
+    description: str = Field(description="The description of the issue")
+    severity: SeverityEnum = Field(description="The severity of the issue")
+    additional_context: Optional[str] = Field(
+        description="A longer explanation for the description of the issue and/or context of the issue",
+        default=None,
+    )
+    chunk_index: Optional[int] = Field(
+        description="The index of the chunk that contains the issue", default=None
+    )
+    claim_index: Optional[int] = Field(
+        description="The index of the claim that contains the issue", default=None
+    )
+    claim_category: Optional[ClaimCategory] = Field(
+        description="The category of the claim that contains the issue", default=None
+    )
+
+
 class ClaimSubstantiatorState(BaseModel):
     # Inputs
     file: FileDocument
@@ -186,6 +221,10 @@ class ClaimSubstantiatorState(BaseModel):
     literature_review: Optional[LiteratureReviewResponse] = None
     addendum: Optional[Addendum] = Field(
         default=None, description="Structured addendum generated from live reports"
+    )
+    ranked_issues: List[DocumentIssue] = Field(
+        default_factory=list,
+        description="Ranked list of document issues with severity levels",
     )
 
     def get_paragraph_chunks(self, paragraph_index: int) -> List[DocumentChunk]:
