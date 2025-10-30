@@ -28,7 +28,9 @@ class RetrievedPassage(BaseModel):
     content: str = Field(description="The text content of the retrieved passage")
     source_file: str = Field(description="Name of the source file")
     chunk_index: int = Field(description="Index of the chunk within the source")
-    similarity_score: float = Field(description="Cosine similarity score (0-1)")
+    cosine_distance: float = Field(
+        description="Cosine distance (0-1, lower = more similar)"
+    )
     page_number: Optional[str] = Field(
         default=None, description="Page number if available"
     )
@@ -162,7 +164,7 @@ class VectorStoreService:
                         content=doc.page_content,
                         source_file=doc.metadata.get("file_name", "unknown"),
                         chunk_index=doc.metadata.get("chunk_index", 0),
-                        similarity_score=float(score),
+                        cosine_distance=float(score),
                         page_number=doc.metadata.get("page_number"),
                     )
                 )
