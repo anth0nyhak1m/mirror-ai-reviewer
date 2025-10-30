@@ -1,0 +1,102 @@
+import logging
+
+from lib.agents.formatting_utils import (
+    format_audience_context,
+    format_domain_context,
+)
+from lib.agents.inference_validator import inference_validator_agent
+from lib.agents.models import ClaimCategory
+from lib.workflows.claim_substantiation.state import (
+    ClaimSubstantiatorState,
+    DocumentChunk,
+)
+from lib.workflows.chunk_iterator import iterate_chunks
+from lib.workflows.decorators import handle_chunk_errors
+
+logger = logging.getLogger(__name__)
+
+
+async def validate_inferences(
+    state: ClaimSubstantiatorState,
+) -> ClaimSubstantiatorState:
+    """Validate inferential claims using Toulmin model of argumentation."""
+    logger.info(f"validate_inferences ({state.config.session_id}): starting")
+
+    results = await iterate_chunks(
+        state, _validate_chunk_inferences, "Validating inference claims"
+    )
+    logger.info(f"validate_inferences ({state.config.session_id}): done")
+    return results
+
+
+@handle_chunk_errors("Inference validation")
+async def _validate_chunk_inferences(
+    state: ClaimSubstantiatorState, chunk: DocumentChunk
+) -> DocumentChunk:
+    """Validate inferences for claims categorized as INTERPRETATION."""
+    # Skip if chunk has no claims
+    if chunk.claims is None or not chunk.claims.claims:
+        logger.debug(
+            "Skipping inference validation for chunk %s: no claims detected",
+            chunk.chunk_index,
+        )
+        return chunk
+
+    # Skip if chunk has no categorization results
+    if not chunk.claim_categories:
+        logger.debug(
+            "Skipping inference validation for chunk %s: no claim categories",
+            chunk.chunk_index,
+        )
+        return chunk
+
+    validation_results = []
+    for claim_index, claim in enumerate(chunk.claims.claims):
+        # Find the categorization result for this claim
+        categorization = next(
+            (cat for cat in chunk.claim_categories if cat.claim_index == claim_index),
+            None,
+        )
+
+        # Only validate claims categorized as INTERPRETATION
+        if (
+            categorization is None
+            or categorization.claim_category != ClaimCategory.INTERPRETATION
+        ):
+            logger.debug(
+                "Skipping claim %s in chunk %s: not an inferential claim (category: %s)",
+                claim_index,
+                chunk.chunk_index,
+                categorization.claim_category if categorization else "None",
+            )
+            continue
+
+        logger.debug(
+            "Validating inference for claim %s in chunk %s",
+            claim_index,
+            chunk.chunk_index,
+        )
+
+        result = await inference_validator_agent.ainvoke(
+            {
+                "full_document": state.file.markdown,
+                "paragraph": state.get_paragraph(chunk.paragraph_index),
+                "chunk": chunk.content,
+                "claim": claim.claim,
+                "domain_context": format_domain_context(state.config.domain),
+                "audience_context": format_audience_context(
+                    state.config.target_audience
+                ),
+                "claim_index": claim_index,
+                "chunk_index": chunk.chunk_index,
+            }
+        )
+        validation_results.append(result)
+
+    logger.debug(
+        "Validated %s inference claims for chunk %s",
+        len(validation_results),
+        chunk.chunk_index,
+    )
+
+    return chunk.model_copy(update={"inference_validations": validation_results})
