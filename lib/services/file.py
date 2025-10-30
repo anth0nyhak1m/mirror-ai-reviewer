@@ -27,11 +27,13 @@ async def create_file_document_from_path(
     file_name = original_file_name or os.path.basename(file_path)
     file_type = mimetypes.guess_type(file_name)[0] or "text/plain"
 
+    markdown = await convert_to_markdown(file_path)
+
     file_document = FileDocument(
         file_path=str(file_path),
         file_name=file_name,
         file_type=file_type,
-        markdown=convert_to_markdown(file_path),
+        markdown=markdown,
     )
 
     return file_document
