@@ -2,10 +2,12 @@ import logging
 
 from lib.agents.literature_review import literature_review_agent
 from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
+from lib.workflows.decorators import handle_workflow_node_errors
 
 logger = logging.getLogger(__name__)
 
 
+@handle_workflow_node_errors()
 async def literature_review(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:

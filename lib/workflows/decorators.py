@@ -8,6 +8,7 @@ from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
     DocumentChunk,
 )
+from lib.workflows.models import WorkflowError
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,36 @@ def handle_chunk_errors(operation_name: str):
                 )
 
                 raise Exception(f"{operation_name} failed: {str(e)}") from e
+
+        return wrapper
+
+    return decorator
+
+
+def handle_workflow_node_errors():
+    """
+    Decorator for consistent workflow node error handling.
+
+    Catches exceptions during workflow node execution, logs them with context,
+    and update the state with a WorkflowError object.
+    """
+
+    def decorator(
+        func: Callable[[ClaimSubstantiatorState], ClaimSubstantiatorState],
+    ) -> Callable[[ClaimSubstantiatorState], ClaimSubstantiatorState]:
+        @wraps(func)
+        async def wrapper(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
+            try:
+                return await func(state)
+            except Exception as e:
+                func_logger = logging.getLogger(func.__module__)
+                func_logger.error(
+                    f"{func.__name__} workflow node execution failed with error: {str(e)}",
+                    exc_info=True,
+                )
+                return {
+                    "errors": [WorkflowError(task_name=func.__name__, error=str(e))]
+                }
 
         return wrapper
 

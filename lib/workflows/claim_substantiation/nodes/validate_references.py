@@ -2,10 +2,12 @@ import logging
 
 from lib.agents.reference_validator import reference_validator_agent
 from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
+from lib.workflows.decorators import handle_workflow_node_errors
 
 logger = logging.getLogger(__name__)
 
 
+@handle_workflow_node_errors()
 async def validate_references(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:

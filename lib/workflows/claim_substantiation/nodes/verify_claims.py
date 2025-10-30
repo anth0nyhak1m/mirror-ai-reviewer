@@ -22,7 +22,11 @@ from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
     DocumentChunk,
 )
-from lib.workflows.decorators import handle_chunk_errors, requires_agent
+from lib.workflows.decorators import (
+    handle_chunk_errors,
+    handle_workflow_node_errors,
+    requires_agent,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -125,6 +129,7 @@ async def _verify_chunk_claims_with_provider(
 
 
 @requires_agent("substantiation")
+@handle_workflow_node_errors()
 async def verify_claims(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:
@@ -153,6 +158,7 @@ async def _verify_chunk_claims(
 
 
 @requires_agent("substantiation")
+@handle_workflow_node_errors()
 async def verify_claims_with_rag(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:

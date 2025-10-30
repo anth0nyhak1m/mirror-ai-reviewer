@@ -13,10 +13,12 @@ from lib.agents.formatting_utils import (
     format_cited_references,
     format_bibliography_prompt_section,
 )
+from lib.workflows.decorators import handle_workflow_node_errors
 
 logger = logging.getLogger(__name__)
 
 
+@handle_workflow_node_errors()
 async def suggest_citations(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:
