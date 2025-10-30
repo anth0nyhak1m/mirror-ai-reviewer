@@ -212,11 +212,7 @@ class RAGReferenceProvider:
             )
 
         except Exception as e:
-            logger.error(
-                f"RAG retrieval failed for claim {claim_index}: {e}",
-                exc_info=True,
-            )
-            return ReferenceContext(cited_references="", cited_references_paragraph="")
+            raise Exception(f"RAG retrieval failed for claim {claim_index}") from e
 
     def _build_enriched_query(self, chunk: DocumentChunk, claim: Claim) -> str:
         """

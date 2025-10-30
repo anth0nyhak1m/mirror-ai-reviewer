@@ -5,10 +5,12 @@ from lib.agents.formatting_utils import (
 )
 from lib.agents.reference_extractor import reference_extractor_agent
 from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
+from lib.workflows.decorators import handle_workflow_node_errors
 
 logger = logging.getLogger(__name__)
 
 
+@handle_workflow_node_errors()
 async def extract_references(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
     logger.info(f"extract_references ({state.config.session_id}): starting")
 

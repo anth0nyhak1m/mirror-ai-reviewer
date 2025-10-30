@@ -6,12 +6,17 @@ from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
     DocumentChunk,
 )
-from lib.workflows.decorators import handle_chunk_errors, requires_agent
+from lib.workflows.decorators import (
+    handle_chunk_errors,
+    handle_workflow_node_errors,
+    requires_agent,
+)
 
 logger = logging.getLogger(__name__)
 
 
 @requires_agent("claims")
+@handle_workflow_node_errors()
 async def extract_claims(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
     logger.info(f"extract_claims ({state.config.session_id}): starting")
 

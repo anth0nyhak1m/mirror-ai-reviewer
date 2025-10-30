@@ -136,8 +136,9 @@ class VectorStoreService:
             return len(docs)
 
         except Exception as e:
-            logger.error(f"Failed to index document {file_name}: {e}")
-            raise
+            raise Exception(
+                f"Failed to index document '{file_name}' in collection {collection_id}"
+            ) from e
 
     async def retrieve_relevant_passages(
         self, query: str, collection_id: str, top_k: int = RAG_TOP_K
@@ -172,8 +173,9 @@ class VectorStoreService:
             return passages
 
         except Exception as e:
-            logger.error(f"Retrieval failed for query '{query}...': {e}")
-            return []
+            raise Exception(
+                f"Retrieval failed for query '{query}' in collection {collection_id}"
+            ) from e
 
 
 _vector_store_service: Optional[VectorStoreService] = None

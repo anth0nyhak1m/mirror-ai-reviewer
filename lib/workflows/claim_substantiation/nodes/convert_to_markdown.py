@@ -4,12 +4,13 @@ import logging
 from lib.services.converters.base import convert_to_markdown as convert_to_markdown_fn
 from lib.services.file import FileDocument
 from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
-from lib.workflows.decorators import requires_agent
+from lib.workflows.decorators import handle_workflow_node_errors, requires_agent
 
 logger = logging.getLogger(__name__)
 
 
 @requires_agent("convert_to_markdown")
+@handle_workflow_node_errors()
 async def convert_to_markdown(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:
