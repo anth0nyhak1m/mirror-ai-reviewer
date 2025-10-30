@@ -26,12 +26,22 @@ class Config(BaseModel):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
 
+    # File uploads
     FILE_UPLOADS_MOUNT_PATH: str
 
+    # File conversion
     FILE_CONVERTER: str = Field(
         default="markitdown",
         description="The converter to use for file to markdown conversion",
         choices=["markitdown", "docling"],
+    )
+    DOCLING_SERVE_API_URL: Optional[str] = Field(
+        default=None,
+        description="Base URL for the docling-serve API (required when FILE_CONVERTER=docling)",
+    )
+    DOCLING_SERVE_API_KEY: Optional[str] = Field(
+        default=None,
+        description="API key for the docling-serve API (required when FILE_CONVERTER=docling)",
     )
 
     @model_validator(mode="after")
@@ -59,6 +69,20 @@ class Config(BaseModel):
 
         return self
 
+    @model_validator(mode="after")
+    def validate_docling_serve_api(self):
+        if self.FILE_CONVERTER == "docling" and not self.DOCLING_SERVE_API_URL:
+            raise ValueError(
+                "DOCLING_SERVE_API_URL must be provided when FILE_CONVERTER=docling"
+            )
+
+        if self.FILE_CONVERTER == "docling" and not self.DOCLING_SERVE_API_KEY:
+            raise ValueError(
+                "DOCLING_SERVE_API_KEY must be provided when FILE_CONVERTER=docling"
+            )
+
+        return self
+
 
 config = Config(
     OPENAI_API_KEY=os.getenv("OPENAI_API_KEY"),
@@ -71,7 +95,8 @@ config = Config(
     LANGFUSE_PROJECT_ID=os.getenv("LANGFUSE_PROJECT_ID"),
     FILE_UPLOADS_MOUNT_PATH=os.getenv("FILE_UPLOADS_MOUNT_PATH", "uploads"),
     FILE_CONVERTER=os.getenv("FILE_CONVERTER", "markitdown"),
-    # Database Configuration
+    DOCLING_SERVE_API_URL=os.getenv("DOCLING_SERVE_API_URL"),
+    DOCLING_SERVE_API_KEY=os.getenv("DOCLING_SERVE_API_KEY"),
     DATABASE_URL=os.getenv("DATABASE_URL"),
     POSTGRES_HOST=os.getenv("POSTGRES_HOST"),
     POSTGRES_PORT=os.getenv("POSTGRES_PORT"),
