@@ -6,6 +6,7 @@ from lib.services.vector_store import (
     get_vector_store_service,
 )
 from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
+from lib.workflows.models import WorkflowError
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ async def index_supporting_documents(
     vector_store = get_vector_store_service()
     indexed_count = 0
     failed_files: list[str] = []
+    errors: list[WorkflowError] = []
 
     for file_doc in state.supporting_files:
         try:
@@ -43,17 +45,22 @@ async def index_supporting_documents(
                 indexed_count += 1
                 continue
 
-            num_chunks = await vector_store.index_document(
+            await vector_store.index_document(
                 markdown_content=file_doc.markdown,
                 file_name=file_doc.file_name,
                 collection_id=collection_id,
             )
 
             indexed_count += 1
-            logger.info(f"Indexed {num_chunks} chunks for {file_doc.file_name}")
 
         except Exception as e:
             logger.error(f"Failed to index {file_doc.file_name}: {e}")
+            errors.append(
+                WorkflowError(
+                    task_name="index_supporting_documents",
+                    error=str(e),
+                )
+            )
             failed_files.append(file_doc.file_name)
 
     if indexed_count:
@@ -61,4 +68,4 @@ async def index_supporting_documents(
     if failed_files:
         logger.warning(f"Failed to index {len(failed_files)} files: {failed_files}")
 
-    return {}
+    return {"errors": errors}

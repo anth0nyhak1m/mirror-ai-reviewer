@@ -10,10 +10,12 @@ from lib.run_utils import run_tasks
 from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
 )
+from lib.workflows.decorators import handle_workflow_node_errors
 
 logger = logging.getLogger(__name__)
 
 
+@handle_workflow_node_errors()
 async def summarize_supporting_documents(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:

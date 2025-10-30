@@ -56,6 +56,11 @@ def ensure_structured_output_response(
     - Else if `response.output` is a dict, validate via `schema.model_validate`.
     - Otherwise, raise ValueError.
     """
+    if response.status != "completed":
+        raise Exception(
+            f"Response ({response.id}) failed: {response.status} - {response.error.message} ({response.error})"
+        )
+
     if hasattr(response, "output_parsed"):
         op = getattr(response, "output_parsed")
         if isinstance(op, BaseModel):
