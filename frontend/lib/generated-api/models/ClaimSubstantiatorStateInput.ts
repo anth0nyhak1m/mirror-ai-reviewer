@@ -62,6 +62,13 @@ import {
   SubstantiationWorkflowConfigToJSON,
   SubstantiationWorkflowConfigToJSONTyped,
 } from './SubstantiationWorkflowConfig';
+import type { BibliographyItemValidationInput } from './BibliographyItemValidationInput';
+import {
+  BibliographyItemValidationInputFromJSON,
+  BibliographyItemValidationInputFromJSONTyped,
+  BibliographyItemValidationInputToJSON,
+  BibliographyItemValidationInputToJSONTyped,
+} from './BibliographyItemValidationInput';
 import type { DocumentSummary } from './DocumentSummary';
 import {
   DocumentSummaryFromJSON,
@@ -69,6 +76,13 @@ import {
   DocumentSummaryToJSON,
   DocumentSummaryToJSONTyped,
 } from './DocumentSummary';
+import type { AddendumInput } from './AddendumInput';
+import {
+  AddendumInputFromJSON,
+  AddendumInputFromJSONTyped,
+  AddendumInputToJSON,
+  AddendumInputToJSONTyped,
+} from './AddendumInput';
 import type { EvidenceWeighterResponseWithClaimIndexInput } from './EvidenceWeighterResponseWithClaimIndexInput';
 import {
   EvidenceWeighterResponseWithClaimIndexInputFromJSON,
@@ -115,6 +129,12 @@ export interface ClaimSubstantiatorStateInput {
   references?: Array<BibliographyItem>;
   /**
    *
+   * @type {Array<BibliographyItemValidationInput>}
+   * @memberof ClaimSubstantiatorStateInput
+   */
+  referencesValidated?: Array<BibliographyItemValidationInput>;
+  /**
+   *
    * @type {Array<DocumentChunkInput>}
    * @memberof ClaimSubstantiatorStateInput
    */
@@ -149,6 +169,12 @@ export interface ClaimSubstantiatorStateInput {
    * @memberof ClaimSubstantiatorStateInput
    */
   literatureReview?: LiteratureReviewResponseInput | null;
+  /**
+   *
+   * @type {AddendumInput}
+   * @memberof ClaimSubstantiatorStateInput
+   */
+  addendum?: AddendumInput | null;
   /**
    * Ranked list of document issues with severity levels
    * @type {Array<DocumentIssue>}
@@ -185,6 +211,10 @@ export function ClaimSubstantiatorStateInputFromJSONTyped(
     workflowRunId: json['workflow_run_id'] == null ? undefined : json['workflow_run_id'],
     references:
       json['references'] == null ? undefined : (json['references'] as Array<any>).map(BibliographyItemFromJSON),
+    referencesValidated:
+      json['references_validated'] == null
+        ? undefined
+        : (json['references_validated'] as Array<any>).map(BibliographyItemValidationInputFromJSON),
     chunks: json['chunks'] == null ? undefined : (json['chunks'] as Array<any>).map(DocumentChunkInputFromJSON),
     errors: json['errors'] == null ? undefined : (json['errors'] as Array<any>).map(WorkflowErrorFromJSON),
     mainDocumentSummary:
@@ -199,6 +229,7 @@ export function ClaimSubstantiatorStateInputFromJSONTyped(
         : (json['live_reports_analysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexInputFromJSON),
     literatureReview:
       json['literature_review'] == null ? undefined : LiteratureReviewResponseInputFromJSON(json['literature_review']),
+    addendum: json['addendum'] == null ? undefined : AddendumInputFromJSON(json['addendum']),
     rankedIssues:
       json['ranked_issues'] == null ? undefined : (json['ranked_issues'] as Array<any>).map(DocumentIssueFromJSON),
   };
@@ -224,6 +255,10 @@ export function ClaimSubstantiatorStateInputToJSONTyped(
     workflow_run_id: value['workflowRunId'],
     references:
       value['references'] == null ? undefined : (value['references'] as Array<any>).map(BibliographyItemToJSON),
+    references_validated:
+      value['referencesValidated'] == null
+        ? undefined
+        : (value['referencesValidated'] as Array<any>).map(BibliographyItemValidationInputToJSON),
     chunks: value['chunks'] == null ? undefined : (value['chunks'] as Array<any>).map(DocumentChunkInputToJSON),
     errors: value['errors'] == null ? undefined : (value['errors'] as Array<any>).map(WorkflowErrorToJSON),
     main_document_summary: DocumentSummaryToJSON(value['mainDocumentSummary']),
@@ -236,6 +271,7 @@ export function ClaimSubstantiatorStateInputToJSONTyped(
         ? undefined
         : (value['liveReportsAnalysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexInputToJSON),
     literature_review: LiteratureReviewResponseInputToJSON(value['literatureReview']),
+    addendum: AddendumInputToJSON(value['addendum']),
     ranked_issues:
       value['rankedIssues'] == null ? undefined : (value['rankedIssues'] as Array<any>).map(DocumentIssueToJSON),
   };
