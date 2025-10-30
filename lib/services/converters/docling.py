@@ -25,7 +25,7 @@ class DoclingFileConverter(FileConverterProtocol):
         }
         parameters = {
             # See https://github.com/docling-project/docling-serve/blob/main/docs/usage.md for full list of parameters
-            "from_formats": ["docx", "html", "pdf", "md", "txt"],
+            "from_formats": ["docx", "html", "pdf", "md"],
             "to_formats": ["md"],
             "pipeline": "standard",
             "image_export_mode": "placeholder",
@@ -44,7 +44,7 @@ class DoclingFileConverter(FileConverterProtocol):
         with open(file_path, "rb") as file:
             files = {"files": (filename, file, file_type)}
             response = await async_client.post(
-                url, files=files, params=parameters, headers=headers
+                url, files=files, data=parameters, headers=headers
             )
 
         if response.status_code != 200:
@@ -53,7 +53,6 @@ class DoclingFileConverter(FileConverterProtocol):
             )
 
         task = response.json()
-        print(task)
         logger.info(
             f"Docling-serve task {task['task_id']} created for conversion of file '{filename}', polling for status"
         )
