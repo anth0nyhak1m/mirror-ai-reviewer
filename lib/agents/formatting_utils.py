@@ -157,6 +157,6 @@ def format_retrieved_passages(passages: List["RetrievedPassage"]) -> str:
         formatted.append(
             f"[Retrieved Passage {i} from {passage.source_file}]\n"
             f"{passage.content}\n"
-            f"(Similarity: {passage.similarity_score:.2f})\n"
+            f"(Distance: {passage.cosine_distance:.2f})\n"
         )
     return "\n".join(formatted)
