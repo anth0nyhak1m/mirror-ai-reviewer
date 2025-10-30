@@ -34,7 +34,7 @@ services:
     environment:
       - DOCLING_SERVE_API_KEY=docling-serve-api-key-secret
       - DOCLING_SERVE_ENABLE_UI=true
-      - DOCLING_SERVE_ENG_LOC_NUM_WORKERS=8
+      - DOCLING_SERVE_ENG_LOC_NUM_WORKERS=4
 
   # Backend Application Service
   api:
