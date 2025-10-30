@@ -1,7 +1,11 @@
 from langgraph.graph import StateGraph
 
+from lib.workflows.claim_substantiation.nodes.categorize_claims import categorize_claims
 from lib.workflows.claim_substantiation.nodes.check_claim_needs_substantiation import (
     check_claim_needs_substantiation,
+)
+from lib.workflows.claim_substantiation.nodes.convert_to_markdown import (
+    convert_to_markdown,
 )
 from lib.workflows.claim_substantiation.nodes.detect_citations import detect_citations
 from lib.workflows.claim_substantiation.nodes.extract_claims import extract_claims
@@ -10,6 +14,10 @@ from lib.workflows.claim_substantiation.nodes.extract_claims_toulmin import (
 )
 from lib.workflows.claim_substantiation.nodes.extract_references import (
     extract_references,
+)
+from lib.workflows.claim_substantiation.nodes.generate_addendum import generate_addendum
+from lib.workflows.claim_substantiation.nodes.generate_live_reports import (
+    generate_live_reports_analysis,
 )
 from lib.workflows.claim_substantiation.nodes.index_supporting_documents import (
     index_supporting_documents,
@@ -20,6 +28,9 @@ from lib.workflows.claim_substantiation.nodes.split_into_chunks import split_int
 from lib.workflows.claim_substantiation.nodes.suggest_citations import suggest_citations
 from lib.workflows.claim_substantiation.nodes.summarize_supporting_documents import (
     summarize_supporting_documents,
+)
+from lib.workflows.claim_substantiation.nodes.validate_references import (
+    validate_references,
 )
 from lib.workflows.claim_substantiation.nodes.verify_claims import (
     verify_claims,
@@ -66,6 +77,7 @@ def build_claim_substantiator_graph(
     graph = StateGraph(ClaimSubstantiatorState)
 
     # Core nodes
+    graph.add_node("convert_to_markdown", convert_to_markdown)
     graph.add_node("prepare_documents", prepare_documents)
     graph.add_node("split_into_chunks", split_into_chunks)
     graph.add_node(
@@ -103,9 +115,10 @@ def build_claim_substantiator_graph(
         graph.add_node("finalize", finalize)
 
     # Entry point
-    graph.set_entry_point("prepare_documents")
+    graph.set_entry_point("convert_to_markdown")
 
     # Core edges - main processing pipeline
+    graph.add_edge("convert_to_markdown", "prepare_documents")
     graph.add_edge("prepare_documents", "split_into_chunks")
     graph.add_edge("split_into_chunks", "extract_references")
     graph.add_edge("extract_references", "validate_references")

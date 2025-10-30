@@ -24,11 +24,25 @@ def rank_issues(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
                 description=f'Reference does not have an associated supporting document: "{reference.text}"',
                 severity=SeverityEnum.LOW,
                 additional_context="This reference was mentioned in the document but no corresponding supporting document was provided. It was excluded from the analysis.",
-                chunk_index=None,  # TODO: include the chunk index that contains the reference
+                chunk_index=_find_chunk_index_by_text(state, reference.text),
             )
             issues.append(issue)
 
-    # 2. Claim Categorization: Claims needing external verification without citations
+    # 2. Reference Validation: Invalid references
+    for validation in state.references_validated:
+        if not validation.valid_reference:
+            issue = DocumentIssue(
+                title="Invalid reference",
+                description=f'Possible invalid reference: "{validation.original_reference.text}"',
+                severity=SeverityEnum.HIGH,
+                additional_context=f"Suggested action: {validation.suggested_action}",
+                chunk_index=_find_chunk_index_by_text(
+                    state, validation.original_reference.text
+                ),
+            )
+            issues.append(issue)
+
+    # 3. Claim Categorization: Claims needing external verification without citations
     for chunk in state.chunks:
         if not chunk.claim_categories:
             continue
@@ -53,7 +67,7 @@ def rank_issues(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
                 )
                 issues.append(issue)
 
-    # 3. Claim Verification: Unsupported and partially supported claims
+    # 4. Claim Verification: Unsupported and partially supported claims
     for chunk in state.chunks:
         if not chunk.substantiations:
             continue
@@ -89,7 +103,7 @@ def rank_issues(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
                 )
                 issues.append(issue)
 
-    # 4. Live Reports Analysis: Add citation and update claim actions
+    # 5. Live Reports Analysis: Add citation and update claim actions
     for live_report in state.live_reports_analysis:
         if (
             live_report.claim_update_action
@@ -129,5 +143,13 @@ def _find_claim_category(chunk: DocumentChunk, claim_index: int) -> ClaimCategor
     for category in chunk.claim_categories:
         if category.claim_index == claim_index:
             return category.claim_category
+
+    return None
+
+
+def _find_chunk_index_by_text(state: ClaimSubstantiatorState, text: str) -> int:
+    for chunk in state.chunks:
+        if text in chunk.content:
+            return chunk.chunk_index
 
     return None
