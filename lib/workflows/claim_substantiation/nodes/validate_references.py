@@ -11,12 +11,6 @@ async def validate_references(
 ) -> ClaimSubstantiatorState:
     logger.info(f"validate_references ({state.config.session_id}): starting")
 
-    if not state.config.run_live_reports:
-        logger.info(
-            f"validate_references ({state.config.session_id}): skipping validate references (run_live_reports is False)"
-        )
-        return {}
-
     agents_to_run = state.config.agents_to_run
     if agents_to_run and "validate_references" not in agents_to_run:
         logger.info(
