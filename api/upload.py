@@ -49,7 +49,7 @@ async def convert_uploaded_files_to_file_document(
                 raise
 
         file_document = await create_file_document_from_path(
-            file_path, original_file_name=filename
+            file_path, original_file_name=filename, markdown_convert=False
         )
         file_documents.append(file_document)
 

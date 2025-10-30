@@ -174,10 +174,10 @@ class RAGReferenceProvider:
             results = await asyncio.gather(*retrieval_tasks)
             all_passages = [passage for passages in results for passage in passages]
 
-            all_passages.sort(key=lambda p: p.similarity_score, reverse=False)
+            all_passages.sort(key=lambda p: p.cosine_distance, reverse=False)
 
             quality_passages = [
-                p for p in all_passages if p.similarity_score <= MAX_DISTANCE_THRESHOLD
+                p for p in all_passages if p.cosine_distance <= MAX_DISTANCE_THRESHOLD
             ]
             top_passages = quality_passages[:RAG_TOP_K]
 
@@ -190,7 +190,7 @@ class RAGReferenceProvider:
             if top_passages:
                 logger.debug(
                     f"Top passage: {top_passages[0].source_file} "
-                    f"(distance: {top_passages[0].similarity_score:.3f})"
+                    f"(distance: {top_passages[0].cosine_distance:.3f})"
                 )
 
             cited_references = format_retrieved_passages(top_passages)
@@ -199,7 +199,7 @@ class RAGReferenceProvider:
                 RetrievedPassageInfo(
                     content=p.content,
                     source_file=p.source_file,
-                    similarity_score=p.similarity_score,
+                    cosine_distance=p.cosine_distance,
                     chunk_index=p.chunk_index,
                 )
                 for p in top_passages
