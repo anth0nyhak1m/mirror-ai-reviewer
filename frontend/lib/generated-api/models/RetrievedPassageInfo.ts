@@ -32,11 +32,11 @@ export interface RetrievedPassageInfo {
    */
   sourceFile: string;
   /**
-   * Cosine similarity score (0-1)
+   * Cosine distance (0-1, lower = more similar)
    * @type {number}
    * @memberof RetrievedPassageInfo
    */
-  similarityScore: number;
+  cosineDistance: number;
   /**
    * Index of the chunk within the source
    * @type {number}
@@ -51,7 +51,7 @@ export interface RetrievedPassageInfo {
 export function instanceOfRetrievedPassageInfo(value: object): value is RetrievedPassageInfo {
   if (!('content' in value) || value['content'] === undefined) return false;
   if (!('sourceFile' in value) || value['sourceFile'] === undefined) return false;
-  if (!('similarityScore' in value) || value['similarityScore'] === undefined) return false;
+  if (!('cosineDistance' in value) || value['cosineDistance'] === undefined) return false;
   if (!('chunkIndex' in value) || value['chunkIndex'] === undefined) return false;
   return true;
 }
@@ -67,7 +67,7 @@ export function RetrievedPassageInfoFromJSONTyped(json: any, ignoreDiscriminator
   return {
     content: json['content'],
     sourceFile: json['source_file'],
-    similarityScore: json['similarity_score'],
+    cosineDistance: json['cosine_distance'],
     chunkIndex: json['chunk_index'],
   };
 }
@@ -87,7 +87,7 @@ export function RetrievedPassageInfoToJSONTyped(
   return {
     content: value['content'],
     source_file: value['sourceFile'],
-    similarity_score: value['similarityScore'],
+    cosine_distance: value['cosineDistance'],
     chunk_index: value['chunkIndex'],
   };
 }

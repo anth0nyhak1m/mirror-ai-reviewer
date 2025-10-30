@@ -34,7 +34,9 @@ class RetrievedPassageInfo(BaseModel):
 
     content: str = Field(description="The text content of the retrieved passage")
     source_file: str = Field(description="Name of the source file")
-    similarity_score: float = Field(description="Cosine similarity score (0-1)")
+    cosine_distance: float = Field(
+        description="Cosine distance (0-1, lower = more similar)"
+    )
     chunk_index: int = Field(description="Index of the chunk within the source")
 
 
