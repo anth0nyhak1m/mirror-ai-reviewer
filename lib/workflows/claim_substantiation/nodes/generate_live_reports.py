@@ -15,10 +15,12 @@ from lib.workflows.claim_substantiation.state import (
     SubstantiationWorkflowConfig,
 )
 from lib.workflows.chunk_iterator import iterate_chunks
+from lib.workflows.decorators import handle_workflow_node_errors
 
 logger = logging.getLogger(__name__)
 
 
+@handle_workflow_node_errors()
 async def generate_live_reports_analysis(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:

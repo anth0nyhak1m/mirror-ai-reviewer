@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Tuple
 
 from lib.agents.addendum_generator import addendum_generator_agent
 from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
+from lib.workflows.decorators import handle_workflow_node_errors
 
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ def _get_original_claim_text(chunk: Any, claim_index: int) -> str:
     return ""
 
 
+@handle_workflow_node_errors()
 async def generate_addendum(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
     logger.info(f"generate_addendum ({state.config.session_id}): starting")
 

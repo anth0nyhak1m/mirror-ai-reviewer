@@ -11,12 +11,17 @@ from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
     DocumentChunk,
 )
-from lib.workflows.decorators import handle_chunk_errors, requires_agent
+from lib.workflows.decorators import (
+    handle_chunk_errors,
+    handle_workflow_node_errors,
+    requires_agent,
+)
 
 logger = logging.getLogger(__name__)
 
 
 @requires_agent("needs_substantiation")
+@handle_workflow_node_errors()
 async def check_claim_needs_substantiation(
     state: ClaimSubstantiatorState,
 ) -> ClaimSubstantiatorState:

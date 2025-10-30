@@ -19,7 +19,7 @@ interface DocumentExplorerTabProps {
 export function DocumentExplorerTab({ results, onChunkReevaluation, isProcessing = false }: DocumentExplorerTabProps) {
   const errors = results.errors || [];
   const issues = results.rankedIssues || [];
-  const workflowErrors = errors.filter((error) => error.chunkIndex === null);
+  const workflowErrors = errors.filter((error) => error.chunkIndex === null || error.chunkIndex === undefined);
   const hasChunks = (results.chunks?.length || 0) > 0;
 
   const [selectedChunkIndex, setSelectedChunkIndex] = useState<number | null>(null);

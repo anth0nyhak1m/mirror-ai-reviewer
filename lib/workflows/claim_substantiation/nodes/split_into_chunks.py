@@ -6,6 +6,7 @@ from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
     DocumentChunk,
 )
+from lib.workflows.decorators import handle_workflow_node_errors
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 chunker = LLMTextSplitter()
 
 
+@handle_workflow_node_errors()
 async def split_into_chunks(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
     logger.info(f"split_into_chunks ({state.config.session_id}): starting")
 
