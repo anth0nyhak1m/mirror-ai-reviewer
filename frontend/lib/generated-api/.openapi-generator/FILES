@@ -54,6 +54,7 @@ models/FieldCategory.ts
 models/FieldProblemType.ts
 models/FileDocument.ts
 models/HTTPValidationError.ts
+models/InferenceValidationResponseWithClaimIndex.ts
 models/LiteratureReviewResponseInput.ts
 models/LiteratureReviewResponseOutput.ts
 models/PoliticalBias.ts

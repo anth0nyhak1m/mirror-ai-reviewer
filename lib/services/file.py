@@ -1,6 +1,7 @@
 import mimetypes
 import os
 
+from langchain_core.messages.utils import count_tokens_approximately
 from pydantic import BaseModel, Field
 
 from lib.services.converters.base import convert_to_markdown
@@ -15,6 +16,9 @@ class FileDocument(BaseModel):
     )
     file_type: str = Field(description="The MIME type of the uploaded file")
     markdown: str = Field(description="The uploaded file content converted to markdown")
+    markdown_token_count: int = Field(
+        description="The approximate number of tokens in the markdown content"
+    )
 
 
 async def create_file_document_from_path(
@@ -28,12 +32,14 @@ async def create_file_document_from_path(
     file_type = mimetypes.guess_type(file_name)[0] or "text/plain"
 
     markdown = await convert_to_markdown(file_path) if markdown_convert else ""
+    markdown_token_count = count_tokens_approximately([markdown])
 
     file_document = FileDocument(
         file_path=str(file_path),
         file_name=file_name,
         file_type=file_type,
         markdown=markdown,
+        markdown_token_count=markdown_token_count,
     )
 
     return file_document
