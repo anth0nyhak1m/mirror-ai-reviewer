@@ -1,5 +1,6 @@
 'use client';
 
+import { LabeledValue } from '@/components/labeled-value';
 import { ClaimSubstantiatorStateOutput } from '@/lib/generated-api';
 import * as React from 'react';
 
@@ -16,24 +17,20 @@ export function FilesTab({ results }: FilesTabProps) {
       <div>
         <h3 className="text-lg font-semibold">Main File</h3>
         <div className="mt-3 border rounded-lg p-4">
-          <div className="text-sm">
-            <p>
-              <strong>Name:</strong> {mainFile?.fileName || 'Unknown'}
-            </p>
-            {typeof mainFile?.fileType === 'string' && (
-              <p className="text-muted-foreground">Type: {mainFile.fileType}</p>
-            )}
-            {typeof mainFile?.filePath === 'string' && (
-              <p className="text-muted-foreground break-all">Path: {mainFile.filePath}</p>
-            )}
-            {typeof mainFile?.markdown === 'string' && (
-              <div className="mt-3">
-                <p className="text-sm text-muted-foreground mb-1">Content</p>
+          <div className="text-sm space-y-1">
+            <LabeledValue label="Name">{mainFile?.fileName || 'Unknown'}</LabeledValue>
+            <LabeledValue label="Type">{mainFile.fileType}</LabeledValue>
+            <LabeledValue label="Path">{mainFile.filePath}</LabeledValue>
+            <LabeledValue label="Approximate Token Count (in markdown content)">
+              {mainFile.markdownTokenCount}
+            </LabeledValue>
+            <div className="mt-3">
+              <LabeledValue label="Content converted to markdown">
                 <div className="text-xs whitespace-pre-wrap border rounded-md p-3 max-h-64 overflow-auto bg-muted/30">
                   {mainFile.markdown}
                 </div>
-              </div>
-            )}
+              </LabeledValue>
+            </div>
           </div>
         </div>
       </div>
@@ -43,30 +40,20 @@ export function FilesTab({ results }: FilesTabProps) {
         {supportingFiles.length === 0 ? (
           <p className="text-sm text-muted-foreground mt-2">No supporting files uploaded.</p>
         ) : (
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 space-y-4">
             {supportingFiles.map((file, index) => (
-              <div key={index} className="border rounded-lg p-4">
-                <div className="flex items-start justify-between w-full">
-                  <div className="text-sm">
-                    <p>
-                      <strong>Name:</strong> {file.fileName}
-                    </p>
-                    {typeof file.fileType === 'string' && (
-                      <p className="text-muted-foreground">Type: {file.fileType}</p>
-                    )}
-                    {typeof file.filePath === 'string' && (
-                      <p className="text-muted-foreground break-all">Path: {file.filePath}</p>
-                    )}
-                    {typeof file.markdown === 'string' && (
-                      <div className="mt-3">
-                        <p className="text-sm text-muted-foreground mb-1">Content</p>
-                        <div className="text-xs whitespace-pre-wrap border rounded-md p-3 max-h-64 overflow-auto bg-muted/30">
-                          {file.markdown}
-                        </div>
-                      </div>
-                    )}
+              <div key={index} className="text-sm space-y-1 border-b pb-4">
+                <LabeledValue label="Name">{file.fileName}</LabeledValue>
+                <LabeledValue label="Type">{file.fileType}</LabeledValue>
+                <LabeledValue label="Path">{file.filePath}</LabeledValue>
+                <LabeledValue label="Approximate Token Count (in markdown content)">
+                  {file.markdownTokenCount}
+                </LabeledValue>
+                <LabeledValue label="Content converted to markdown">
+                  <div className="text-xs whitespace-pre-wrap border rounded-md p-3 max-h-64 overflow-auto bg-muted/30">
+                    {file.markdown}
                   </div>
-                </div>
+                </LabeledValue>
               </div>
             ))}
           </div>
