@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../../ui/tooltip';
 import { TabNavigation } from './components';
 import { TabType } from './constants';
 import { useResultsCalculations } from './hooks/use-results-calculations';
-import { CitationsTab, FilesTab, LiteratureReviewTab, ReferencesTab, SummaryTab } from './tabs';
+import { CitationsTab, FilesTab, LiteratureReviewTab, LiveReportsTab, ReferencesTab, SummaryTab } from './tabs';
 import { DocumentExplorerTab } from './tabs/document-explorer-tab';
 
 interface ResultsVisualizationProps {
@@ -78,6 +78,8 @@ export function ResultsVisualization({
         return <ReferencesTab results={results} isProcessing={isProcessing} />;
       case 'literature_review':
         return <LiteratureReviewTab results={results} isProcessing={isProcessing} />;
+      case 'live_reports':
+        return <LiveReportsTab results={results} isProcessing={isProcessing} />;
       case 'files':
         return <FilesTab results={results} />;
       case 'document-explorer':
