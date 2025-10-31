@@ -1,4 +1,12 @@
-export const TABS = ['document-explorer', 'summary', 'files', 'citations', 'references', 'literature_review'] as const;
+export const TABS = [
+  'document-explorer',
+  'summary',
+  'files',
+  'citations',
+  'references',
+  'literature_review',
+  'live_reports',
+] as const;
 
 export type TabType = (typeof TABS)[number];
 
@@ -9,4 +17,5 @@ export const TAB_LABELS: Record<TabType, string> = {
   citations: 'Citations',
   references: 'References',
   literature_review: 'Literature Review',
+  live_reports: 'Live Reports',
 };
