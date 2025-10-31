@@ -43,6 +43,12 @@ export interface FileDocument {
    * @memberof FileDocument
    */
   markdown: string;
+  /**
+   * The approximate number of tokens in the markdown content
+   * @type {number}
+   * @memberof FileDocument
+   */
+  markdownTokenCount: number;
 }
 
 /**
@@ -53,6 +59,7 @@ export function instanceOfFileDocument(value: object): value is FileDocument {
   if (!('filePath' in value) || value['filePath'] === undefined) return false;
   if (!('fileType' in value) || value['fileType'] === undefined) return false;
   if (!('markdown' in value) || value['markdown'] === undefined) return false;
+  if (!('markdownTokenCount' in value) || value['markdownTokenCount'] === undefined) return false;
   return true;
 }
 
@@ -69,6 +76,7 @@ export function FileDocumentFromJSONTyped(json: any, ignoreDiscriminator: boolea
     filePath: json['file_path'],
     fileType: json['file_type'],
     markdown: json['markdown'],
+    markdownTokenCount: json['markdown_token_count'],
   };
 }
 
@@ -86,5 +94,6 @@ export function FileDocumentToJSONTyped(value?: FileDocument | null, ignoreDiscr
     file_path: value['filePath'],
     file_type: value['fileType'],
     markdown: value['markdown'],
+    markdown_token_count: value['markdownTokenCount'],
   };
 }

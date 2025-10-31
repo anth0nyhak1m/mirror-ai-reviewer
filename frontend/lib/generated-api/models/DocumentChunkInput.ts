@@ -22,6 +22,13 @@ import {
 } from './ClaimCommonKnowledgeResultWithClaimIndex';
 import type { Claims } from './Claims';
 import { ClaimsFromJSON, ClaimsFromJSONTyped, ClaimsToJSON, ClaimsToJSONTyped } from './Claims';
+import type { InferenceValidationResponseWithClaimIndex } from './InferenceValidationResponseWithClaimIndex';
+import {
+  InferenceValidationResponseWithClaimIndexFromJSON,
+  InferenceValidationResponseWithClaimIndexFromJSONTyped,
+  InferenceValidationResponseWithClaimIndexToJSON,
+  InferenceValidationResponseWithClaimIndexToJSONTyped,
+} from './InferenceValidationResponseWithClaimIndex';
 import type { CitationSuggestionResultWithClaimIndexInput } from './CitationSuggestionResultWithClaimIndexInput';
 import {
   CitationSuggestionResultWithClaimIndexInputFromJSON,
@@ -124,6 +131,12 @@ export interface DocumentChunkInput {
    * @memberof DocumentChunkInput
    */
   liveReportsAnalysis?: Array<EvidenceWeighterResponseWithClaimIndexInput>;
+  /**
+   *
+   * @type {Array<InferenceValidationResponseWithClaimIndex>}
+   * @memberof DocumentChunkInput
+   */
+  inferenceValidations?: Array<InferenceValidationResponseWithClaimIndex>;
 }
 
 /**
@@ -170,6 +183,10 @@ export function DocumentChunkInputFromJSONTyped(json: any, ignoreDiscriminator: 
       json['live_reports_analysis'] == null
         ? undefined
         : (json['live_reports_analysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexInputFromJSON),
+    inferenceValidations:
+      json['inference_validations'] == null
+        ? undefined
+        : (json['inference_validations'] as Array<any>).map(InferenceValidationResponseWithClaimIndexFromJSON),
   };
 }
 
@@ -211,5 +228,9 @@ export function DocumentChunkInputToJSONTyped(
       value['liveReportsAnalysis'] == null
         ? undefined
         : (value['liveReportsAnalysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexInputToJSON),
+    inference_validations:
+      value['inferenceValidations'] == null
+        ? undefined
+        : (value['inferenceValidations'] as Array<any>).map(InferenceValidationResponseWithClaimIndexToJSON),
   };
 }

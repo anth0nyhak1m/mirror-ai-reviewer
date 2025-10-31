@@ -48,6 +48,7 @@ export * from './FieldCategory';
 export * from './FieldProblemType';
 export * from './FileDocument';
 export * from './HTTPValidationError';
+export * from './InferenceValidationResponseWithClaimIndex';
 export * from './LiteratureReviewResponseInput';
 export * from './LiteratureReviewResponseOutput';
 export * from './PoliticalBias';
