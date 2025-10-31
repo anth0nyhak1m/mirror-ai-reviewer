@@ -5,6 +5,7 @@ from lib.services.converters.base import convert_to_markdown as convert_to_markd
 from lib.services.file import FileDocument
 from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
 from lib.workflows.decorators import handle_workflow_node_errors, requires_agent
+from langchain_core.messages.utils import count_tokens_approximately
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +38,12 @@ async def convert_to_markdown(
 
 async def _convert_to_markdown_task(file_document: FileDocument) -> FileDocument:
     markdown = await convert_to_markdown_fn(file_document.file_path)
+    markdown_token_count = count_tokens_approximately([markdown])
 
     return FileDocument(
         file_path=file_document.file_path,
         file_name=file_document.file_name,
         file_type=file_document.file_type,
         markdown=markdown,
+        markdown_token_count=markdown_token_count,
     )
