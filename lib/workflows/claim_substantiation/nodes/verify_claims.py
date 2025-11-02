@@ -85,24 +85,15 @@ async def _verify_chunk_claims_with_provider(
 
         is_rag_mode = ref_context.retrieved_passages is not None
 
-        evidence_explanation = (
-            "### Evidence Retrieval Method: RAG (Retrieval-Augmented Generation)\n"
-            "The supporting evidence below consists of **relevant passages retrieved via semantic search** from the supporting documents. "
-            "These passages were selected based on their semantic similarity to the claim. "
-            "Evaluate whether these retrieved passages provide sufficient support for the claim."
-            if is_rag_mode
-            else "### Evidence Retrieval Method: Citation-Based\n"
-            "The supporting evidence below consists of **complete supporting documents** that are cited in the text. "
-            "Review the full documents to determine if they support the claim."
-        )
-
         result = await claim_verifier_agent.ainvoke(
             {
                 "full_document": state.file.markdown,
                 "paragraph": state.get_paragraph(chunk.paragraph_index),
                 "chunk": chunk.content,
                 "claim": claim.claim,
-                "evidence_context_explanation": evidence_explanation,
+                "evidence_context_explanation": format_evidence_explanation(
+                    is_rag_mode
+                ),
                 "cited_references": ref_context.cited_references,
                 "cited_references_paragraph": ref_context.cited_references_paragraph,
                 "domain_context": format_domain_context(state.config.domain),
@@ -183,3 +174,18 @@ async def _verify_chunk_claims_rag(
     without requiring citations to be detected first.
     """
     return await _verify_chunk_claims_with_provider(state, chunk, _RAG_PROVIDER)
+
+
+def format_evidence_explanation(is_rag_mode: bool) -> str:
+    evidence_explanation = (
+        "### Evidence Retrieval Method: RAG (Retrieval-Augmented Generation)\n"
+        "The supporting evidence below consists of **relevant passages retrieved via semantic search** from the supporting documents. "
+        "These passages were selected based on their semantic similarity to the claim. "
+        "Evaluate whether these retrieved passages provide sufficient support for the claim."
+        if is_rag_mode
+        else "### Evidence Retrieval Method: Citation-Based\n"
+        "The supporting evidence below consists of **complete supporting documents** that are cited in the text. "
+        "Review the full documents to determine if they support the claim."
+    )
+
+    return evidence_explanation

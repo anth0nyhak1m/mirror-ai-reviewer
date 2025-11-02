@@ -1,5 +1,6 @@
 import logging
 
+from lib.services.file import FileDocument
 from lib.services.vector_store import (
     get_collection_id,
     get_file_hash_from_path,
@@ -28,29 +29,13 @@ async def index_supporting_documents(
 
     logger.info(f"Indexing {len(state.supporting_files)} supporting documents for RAG")
 
-    vector_store = get_vector_store_service()
     indexed_count = 0
     failed_files: list[str] = []
     errors: list[WorkflowError] = []
 
     for file_doc in state.supporting_files:
         try:
-            file_hash = get_file_hash_from_path(file_doc.file_path)
-            collection_id = get_collection_id(file_hash)
-
-            if await vector_store.collection_exists(collection_id):
-                logger.info(
-                    f"Collection {collection_id} exists, skipping {file_doc.file_name}"
-                )
-                indexed_count += 1
-                continue
-
-            await vector_store.index_document(
-                markdown_content=file_doc.markdown,
-                file_name=file_doc.file_name,
-                collection_id=collection_id,
-            )
-
+            await index_file_document(file_doc)
             indexed_count += 1
 
         except Exception as e:
@@ -69,3 +54,22 @@ async def index_supporting_documents(
         logger.warning(f"Failed to index {len(failed_files)} files: {failed_files}")
 
     return {"errors": errors}
+
+
+async def index_file_document(file_doc: FileDocument) -> int:
+    vector_store = get_vector_store_service()
+
+    file_hash = get_file_hash_from_path(file_doc.file_path)
+    collection_id = get_collection_id(file_hash)
+
+    collection_exists = await vector_store.is_collection_indexed(collection_id)
+    if collection_exists:
+        logger.info(f"Collection {collection_id} already exists, skipping indexing")
+        return 0
+
+    indexed_docs_count = await vector_store.index_document(
+        markdown_content=file_doc.markdown,
+        file_name=file_doc.file_name,
+        collection_id=collection_id,
+    )
+    return indexed_docs_count
