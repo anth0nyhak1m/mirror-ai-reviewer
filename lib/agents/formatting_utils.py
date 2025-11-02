@@ -155,8 +155,7 @@ def format_retrieved_passages(passages: List["RetrievedPassage"]) -> str:
     formatted = []
     for i, passage in enumerate(passages, 1):
         formatted.append(
-            f"[Retrieved Passage {i} from {passage.source_file}]\n"
-            f"{passage.content}\n"
-            f"(Distance: {passage.cosine_distance:.2f})\n"
+            f"#### Retrieved Passage {i} from {passage.source_file} (cosine distance: {passage.cosine_distance:.2f})\n"
+            f"```\n{passage.content}\n```\n"
         )
     return "\n".join(formatted)

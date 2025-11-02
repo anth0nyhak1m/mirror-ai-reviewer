@@ -13,6 +13,9 @@ from lib.agents.formatting_utils import (
     format_supporting_documents_prompt_section,
 )
 from lib.models.agent_test_case import AgentTestCase
+from lib.workflows.claim_substantiation.nodes.verify_claims import (
+    format_evidence_explanation,
+)
 from tests.conftest import TESTS_DIR, extract_paragraph_from_chunk, load_document
 from tests.datasets.loader import load_dataset
 
@@ -61,11 +64,7 @@ def _build_cases():
             "paragraph": paragraph,
             "chunk": chunk,
             "claim": claim_text,
-            "evidence_context_explanation": (
-                "### Evidence Retrieval Method: Citation-Based\n"
-                "The supporting evidence below consists of **complete supporting documents** that are cited in the text. "
-                "Review the full documents to determine if they support the claim."
-            ),
+            "evidence_context_explanation": format_evidence_explanation(False),
             "cited_references": cited_references,
             "cited_references_paragraph": "",
             "domain_context": format_domain_context(domain),
