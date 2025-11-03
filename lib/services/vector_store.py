@@ -2,6 +2,7 @@ import logging
 import os
 from typing import List, Optional
 
+from langchain_core.vectorstores import VectorStoreRetriever
 from langchain_openai import OpenAIEmbeddings
 from langchain_postgres import PGVector
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -43,7 +44,7 @@ def get_file_hash_from_path(file_path: str) -> str:
 
 def get_collection_id(file_hash: str) -> str:
     """Generate pgvector collection ID from file hash."""
-    return f"doc_passages_{file_hash[:16]}"
+    return f"doc_passages_{file_hash}"
 
 
 class VectorStoreService:
@@ -88,17 +89,12 @@ class VectorStoreService:
 
         return self._vectorstore_cache[collection_id]
 
-    async def collection_exists(self, collection_id: str) -> bool:
-        """Check if collection already indexed."""
-        try:
-            vectorstore = self._get_vectorstore(collection_id)
-            results = await vectorstore.asimilarity_search(
-                query="test",
-                k=1,
-            )
-            return len(results) > 0
-        except Exception:
-            return False
+    async def is_collection_indexed(self, collection_id: str) -> bool:
+        """Check if collection is indexed."""
+
+        vectorstore = self._get_vectorstore(collection_id)
+        results = await vectorstore.asimilarity_search(query="", k=1)
+        return len(results) > 0
 
     async def index_document(
         self, markdown_content: str, file_name: str, collection_id: str
@@ -108,12 +104,6 @@ class VectorStoreService:
         Returns number of chunks indexed.
         """
         try:
-            if await self.collection_exists(collection_id):
-                logger.info(
-                    f"Collection {collection_id} already exists, skipping indexing"
-                )
-                return 0
-
             docs = self.chunker.create_documents(
                 [markdown_content],
                 metadatas=[
@@ -121,7 +111,6 @@ class VectorStoreService:
                     for _ in range(len(markdown_content))
                 ],
             )
-
             for i, doc in enumerate(docs):
                 doc.metadata["chunk_index"] = i
                 doc.metadata["file_name"] = file_name

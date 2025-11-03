@@ -132,7 +132,7 @@ export function GroupedTestCaseItem({ name, testCases }: GroupedTestCaseItem) {
                   <div key={key} className="space-y-1">
                     <span className="font-medium text-sm">{key}:</span>
                     <div className="text-sm text-muted-foreground bg-background p-2 rounded border max-h-32 overflow-y-auto whitespace-pre-wrap">
-                      {value}
+                      {typeof value === 'string' ? value : JSON.stringify(value)}
                     </div>
                   </div>
                 ))}

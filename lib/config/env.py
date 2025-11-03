@@ -32,8 +32,7 @@ class Config(BaseModel):
     # File conversion
     FILE_CONVERTER: str = Field(
         default="markitdown",
-        description="The converter to use for file to markdown conversion",
-        choices=["markitdown", "docling"],
+        description="The converter to use for file to markdown conversion ('markitdown' or 'docling')",
     )
     DOCLING_SERVE_API_URL: Optional[str] = Field(
         default=None,
