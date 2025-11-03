@@ -19,7 +19,6 @@ from lib.agents.formatting_utils import (
 )
 from lib.services.vector_store import (
     RAG_TOP_K,
-    RetrievedPassage,
     get_collection_id,
     get_file_hash_from_path,
     get_vector_store_service,
@@ -36,7 +35,7 @@ MAX_REFERENCE_CHARACTER_COUNT = 100000  # Max characters from full documents
 
 # RAG reference provider settings
 MAX_DISTANCE_THRESHOLD = (
-    0.35  # Max cosine distance for passage relevance (0-1 scale, lower = more similar)
+    1  # Max cosine distance for passage relevance (0-1 scale, lower = more similar)
 )
 MAX_QUERY_LENGTH = 3000  # Max characters in enriched query
 MAX_BACKING_ITEM_LENGTH = 600  # Max characters per backing item to include in query
@@ -167,6 +166,7 @@ class RAGReferenceProvider:
                     collection_id=get_collection_id(
                         get_file_hash_from_path(file_doc.file_path)
                     ),
+                    top_k=20,
                 )
                 for file_doc in state.supporting_files
             ]
