@@ -32,6 +32,7 @@ export function AnalysisForm() {
       documentPublicationDate: '',
       runLiteratureReview: false,
       runSuggestCitations: false,
+      webSearchConsent: false,
     },
     validators: {
       onChange: ({ value }) => {
@@ -48,6 +49,13 @@ export function AnalysisForm() {
             return {
               fields: {
                 documentPublicationDate: 'Document publication date is required',
+              },
+            };
+          }
+          if (!value.webSearchConsent) {
+            return {
+              fields: {
+                webSearchConsent: 'Web search consent is required when using literature review or live reports',
               },
             };
           }
@@ -356,6 +364,31 @@ export function AnalysisForm() {
           )}
         </form.Field>
       </div>
+
+      <form.Subscribe selector={(state) => [state.values.runLiteratureReview, state.values.reviewType]}>
+        {([runLiteratureReview, reviewType]) =>
+          (runLiteratureReview || reviewType === 'live-reports') && (
+            <form.Field name="webSearchConsent">
+              {(field) => (
+                <div>
+                  <div className="bg-yellow-50 border border-yellow-400 rounded-lg">
+                    <CheckboxWithDescription
+                      id="web-search-consent"
+                      checked={field.state.value}
+                      onCheckedChange={(checked) => field.handleChange(checked === true)}
+                      label="I consent to perform web search using parts of the document"
+                      description={`Web search is required to perform "literature review" or "live reports". Parts of the document will be used to perform web search, so we don't recommend using confidential information. Disable "literature review" or "live reports" if you don't consent to perform web search.`}
+                    />
+                  </div>
+                  {!field.state.meta.isValid && (
+                    <p className="text-sm text-destructive mt-1 pl-6">{field.state.meta.errors.join(', ')}</p>
+                  )}
+                </div>
+              )}
+            </form.Field>
+          )
+        }
+      </form.Subscribe>
 
       <div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
