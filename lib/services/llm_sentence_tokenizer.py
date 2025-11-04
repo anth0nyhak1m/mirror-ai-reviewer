@@ -3,7 +3,6 @@
 from typing import List
 from pydantic import BaseModel, Field
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import PydanticOutputParser
 from langchain.chat_models import init_chat_model
 
 from lib.models.agent import DEFAULT_LLM_TIMEOUT
@@ -37,8 +36,6 @@ async def llm_tokenize_paragraph(paragraph: str) -> List[str]:
     Raises:
         Exception: If LLM API call fails (timeout, rate limit, etc.)
     """
-    parser = PydanticOutputParser(pydantic_object=SentenceChunks)
-
     prompt = ChatPromptTemplate.from_template(
         """You are a sentence tokenization expert for academic documents.
 
@@ -70,25 +67,20 @@ IMPORTANT RULES:
 6. Each chunk should be a complete, meaningful unit of text
 
 Text to tokenize:
+```
 {paragraph}
-
-{format_instructions}"""
+```"""
     )
 
     llm = init_chat_model(
         gpt_5_mini_model.model_name,
         temperature=0,
         timeout=DEFAULT_LLM_TIMEOUT,
-    )
-    chain = prompt | llm | parser
+    ).with_structured_output(SentenceChunks)
 
     try:
-        result = await chain.ainvoke(
-            {
-                "paragraph": paragraph,
-                "format_instructions": parser.get_format_instructions(),
-            }
-        )
+        messages = prompt.format_messages(paragraph=paragraph)
+        result = await llm.ainvoke(messages)
         return result.chunks
     except Exception as e:
         raise Exception(f"LLM tokenization failed for paragraph: {e}") from e
