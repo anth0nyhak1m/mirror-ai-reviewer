@@ -1,10 +1,21 @@
 import re
-from typing import List
+import logging
+from typing import List, Optional
 import nltk
 from pydantic import BaseModel, Field
 
 from lib.agents.models import ValidatedDocument, DocumentMetadata
 from lib.models.agent import AgentProtocol
+from lib.services.fragment_detection import (
+    has_suspicious_fragments,
+    DetectionMethod,
+)
+from lib.services.llm_sentence_tokenizer import (
+    llm_tokenize_paragraph,
+    FRAGMENT_DETECTION_METHOD,
+)
+
+logger = logging.getLogger(__name__)
 
 # Download required NLTK data
 try:
@@ -12,9 +23,14 @@ try:
 except LookupError:
     try:
         nltk.download("punkt_tab")
-    except:
+    except Exception as e:
         # Fallback to older punkt tokenizer
-        nltk.download("punkt")
+        try:
+            nltk.download("punkt")
+        except Exception as fallback_error:
+            raise RuntimeError(
+                f"Failed to download NLTK punkt tokenizer: {e}. Fallback also failed: {fallback_error}"
+            )
 
 
 class Paragraph(BaseModel):
@@ -59,12 +75,25 @@ def split_into_paragraphs(text: str) -> List[str]:
     return [line.strip() for line in text.split("\n") if line.strip()]
 
 
-def split_paragraph_into_sentences(paragraph: str) -> List[str]:
+async def split_paragraph_into_sentences(
+    paragraph: str,
+    detection_method: Optional[DetectionMethod] = None,
+) -> List[str]:
     """
     Split a paragraph into sentences using NLTK's sentence tokenizer.
-    Handles special cases for markdown formatting.
+
+    Uses a hybrid approach:
+    1. Fast NLTK tokenization first
+    2. Fragment detection to identify problems
+    3. LLM fallback for suspicious fragments
+
+    Args:
+        paragraph: The text to split into sentences
+        detection_method: Optional override for fragment detection method
+
+    Returns:
+        List of sentence chunks
     """
-    # Check if this is a markdown heading (standalone)
     if re.match(r"^#{1,6}\s+", paragraph):
         return [paragraph.strip()]
 
@@ -136,6 +165,21 @@ def split_paragraph_into_sentences(paragraph: str) -> List[str]:
                 else:
                     cleaned_sentences.append(sentence)
 
+        # Check for suspicious fragments before returning
+        method = detection_method or FRAGMENT_DETECTION_METHOD
+        suspicion_detected, suspicion_score = await has_suspicious_fragments(
+            cleaned_sentences, paragraph, method=method
+        )
+
+        if suspicion_detected:
+            logger.info(
+                f"Fragment detection triggered LLM fallback for list item: method={method}, "
+                f"score={suspicion_score}, nltk_fragments={len(cleaned_sentences)}, "
+                f"paragraph={paragraph}..."
+            )
+            result = await llm_tokenize_paragraph(paragraph)
+            return result
+
         return cleaned_sentences
 
     # Use NLTK sentence tokenizer for regular text
@@ -152,7 +196,23 @@ def split_paragraph_into_sentences(paragraph: str) -> List[str]:
         else:
             merged.append(s)
 
-    return merged
+    method = detection_method or FRAGMENT_DETECTION_METHOD
+
+    suspicion_detected, suspicion_score = await has_suspicious_fragments(
+        merged, paragraph, method=method
+    )
+
+    result = merged
+
+    if suspicion_detected:
+        logger.info(
+            f"Fragment detection triggered LLM fallback: method={method}, "
+            f"score={suspicion_score}, nltk_fragments={len(merged)}, "
+            f"paragraph={paragraph}..."
+        )
+        result = await llm_tokenize_paragraph(paragraph)
+
+    return result
 
 
 class DocumentChunkerAgent(AgentProtocol):
@@ -191,7 +251,7 @@ class DocumentChunkerAgent(AgentProtocol):
             if not paragraph_text.strip():
                 continue
 
-            sentences = split_paragraph_into_sentences(paragraph_text)
+            sentences = await split_paragraph_into_sentences(paragraph_text)
             if sentences:  # Only add non-empty paragraphs
                 paragraph_objects.append(Paragraph(chunks=sentences))
 
