@@ -39,6 +39,7 @@ export function ChunkSidebarContent({
   const citationSuggestions = chunk?.citationSuggestions || [];
   const liveReportsAnalysis = chunk?.liveReportsAnalysis || [];
   const claimCategories = chunk?.claimCategories || [];
+  const inferenceValidations = chunk?.inferenceValidations || [];
   const issues = results.rankedIssues?.filter((issue) => issue.chunkIndex === chunkIndex) || [];
 
   const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
@@ -98,6 +99,7 @@ export function ChunkSidebarContent({
               substantiation={substantiations.find((s) => s.claimIndex === index)}
               citationSuggestion={citationSuggestions.find((c) => c.claimIndex === index)}
               liveReportsAnalysis={liveReportsAnalysis.find((l) => l.claimIndex === index)}
+              inferenceValidation={inferenceValidations.find((i) => i.claimIndex === index)}
               claimIndex={index}
               totalClaims={claims.length}
               references={references}

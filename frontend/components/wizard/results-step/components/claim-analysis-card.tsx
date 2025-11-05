@@ -12,6 +12,7 @@ import {
   ClaimSubstantiationResultWithClaimIndex,
   EvidenceWeighterResponseWithClaimIndexOutput,
   FileDocument,
+  InferenceValidationResponseWithClaimIndex,
   ToulminClaim,
 } from '@/lib/generated-api';
 import { ClaimCitationSuggestions } from './claim-citation-suggestions';
@@ -20,6 +21,7 @@ import { ClaimNeedsSubstantiationAccordion } from './claim-needs-substantiation-
 import { SubstantiationResults } from './substantiation-results';
 import { ToulminClaimAccordion } from './toulmin-claim-accordion';
 import { ClaimCategoryResults } from './claim-category-results';
+import { ClaimInferenceValidation } from './claim-inference-validation';
 
 export interface ClaimAnalysisCardProps {
   claim: ToulminClaim;
@@ -32,6 +34,7 @@ export interface ClaimAnalysisCardProps {
   supportingFiles: FileDocument[];
   citationSuggestion?: CitationSuggestionResultWithClaimIndexOutput;
   liveReportsAnalysis?: EvidenceWeighterResponseWithClaimIndexOutput;
+  inferenceValidation?: InferenceValidationResponseWithClaimIndex;
   workflowRunId?: string;
   chunkIndex?: number;
 }
@@ -47,6 +50,7 @@ export function ClaimAnalysisCard({
   totalClaims,
   citationSuggestion,
   liveReportsAnalysis,
+  inferenceValidation,
   workflowRunId,
   chunkIndex,
 }: ClaimAnalysisCardProps) {
@@ -84,6 +88,7 @@ export function ClaimAnalysisCard({
             />
           )}
           {liveReportsAnalysis && <ClaimLiveReports liveReportsAnalysis={liveReportsAnalysis} />}
+          {inferenceValidation && <ClaimInferenceValidation inferenceValidation={inferenceValidation} />}
         </div>
 
         {workflowRunId && chunkIndex !== undefined && (
