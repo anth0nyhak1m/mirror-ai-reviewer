@@ -69,11 +69,12 @@ def get_chunker_result_as_langchain_documents(
 
 def split_into_paragraphs(text: str) -> List[str]:
     """
-    Split text into paragraphs based on single newlines.
-    Each line becomes its own paragraph.
+    Split text into paragraphs based on blank lines (double newlines).
+    This keeps code blocks, multi-line lists, and other formatted content intact.
     """
-    # Split on single newlines - each line becomes a paragraph
-    return [line.strip() for line in text.split("\n") if line.strip()]
+    # Split on blank lines (double newlines or more)
+    paragraphs = re.split(r"\n\s*\n", text)
+    return [p.strip() for p in paragraphs if p.strip()]
 
 
 async def split_paragraph_into_sentences(
@@ -98,8 +99,9 @@ async def split_paragraph_into_sentences(
     if re.match(r"^#{1,6}\s+", paragraph):
         return [paragraph.strip()]
 
-    # Check if this is a code block
-    if paragraph.startswith("```"):
+    # Check if this is a code block (fenced with backticks)
+    # Now that we split on blank lines, code blocks come as complete multi-line paragraphs
+    if "```" in paragraph:
         return [paragraph.strip()]
 
     # Reference-style numbered entries: split multiple references into separate chunks
