@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 
 from lib.agents.claim_verifier import EvidenceAlignmentLevel
@@ -105,6 +105,10 @@ def rank_issues(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
 
     # 5. Live Reports Analysis: Add citation and update claim actions
     for live_report in state.live_reports_analysis:
+        chunk = _find_chunk_by_index(state, live_report.chunk_index)
+        if chunk is None:
+            continue
+
         if (
             live_report.claim_update_action
             == EvidenceWeighterRecommendedAction.ADD_CITATION
@@ -134,15 +138,45 @@ def rank_issues(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
             )
             issues.append(issue)
 
+    # 6. Inference Validation: Invalid inferences
+    for chunk in state.chunks:
+        if not chunk.inference_validations:
+            continue
+
+        for validation in chunk.inference_validations:
+            if not validation.valid:
+                issue = DocumentIssue(
+                    title="Invalid Inference",
+                    description=validation.rationale,
+                    severity=SeverityEnum.MEDIUM,
+                    additional_context=f"Suggested action: {validation.suggested_action}",
+                    chunk_index=validation.chunk_index,
+                    claim_index=validation.claim_index,
+                    claim_category=_find_claim_category(chunk, validation.claim_index),
+                )
+                issues.append(issue)
+
     issues.sort(key=lambda x: x.severity.sort_index(), reverse=True)
 
     return {"ranked_issues": issues}
 
 
-def _find_claim_category(chunk: DocumentChunk, claim_index: int) -> ClaimCategory:
+def _find_claim_category(
+    chunk: DocumentChunk, claim_index: int
+) -> Optional[ClaimCategory]:
     for category in chunk.claim_categories:
         if category.claim_index == claim_index:
             return category.claim_category
+
+    return None
+
+
+def _find_chunk_by_index(
+    state: ClaimSubstantiatorState, chunk_index: int
+) -> Optional[DocumentChunk]:
+    for chunk in state.chunks:
+        if chunk.chunk_index == chunk_index:
+            return chunk
 
     return None
 
