@@ -1,10 +1,22 @@
+import asyncio
 import re
-from typing import List
+import logging
+from typing import List, Optional
 import nltk
 from pydantic import BaseModel, Field
 
 from lib.agents.models import ValidatedDocument, DocumentMetadata
 from lib.models.agent import AgentProtocol
+from lib.services.fragment_detection import (
+    has_suspicious_fragments,
+    DetectionMethod,
+)
+from lib.services.llm_sentence_tokenizer import (
+    llm_tokenize_paragraph,
+    FRAGMENT_DETECTION_METHOD,
+)
+
+logger = logging.getLogger(__name__)
 
 # Download required NLTK data
 try:
@@ -12,9 +24,14 @@ try:
 except LookupError:
     try:
         nltk.download("punkt_tab")
-    except:
+    except Exception as e:
         # Fallback to older punkt tokenizer
-        nltk.download("punkt")
+        try:
+            nltk.download("punkt")
+        except Exception as fallback_error:
+            raise RuntimeError(
+                f"Failed to download NLTK punkt tokenizer: {e}. Fallback also failed: {fallback_error}"
+            )
 
 
 class Paragraph(BaseModel):
@@ -52,24 +69,39 @@ def get_chunker_result_as_langchain_documents(
 
 def split_into_paragraphs(text: str) -> List[str]:
     """
-    Split text into paragraphs based on single newlines.
-    Each line becomes its own paragraph.
+    Split text into paragraphs based on blank lines (double newlines).
+    This keeps code blocks, multi-line lists, and other formatted content intact.
     """
-    # Split on single newlines - each line becomes a paragraph
-    return [line.strip() for line in text.split("\n") if line.strip()]
+    # Split on blank lines (double newlines or more)
+    paragraphs = re.split(r"\n\s*\n", text)
+    return [p.strip() for p in paragraphs if p.strip()]
 
 
-def split_paragraph_into_sentences(paragraph: str) -> List[str]:
+async def split_paragraph_into_sentences(
+    paragraph: str,
+    detection_method: Optional[DetectionMethod] = None,
+) -> List[str]:
     """
     Split a paragraph into sentences using NLTK's sentence tokenizer.
-    Handles special cases for markdown formatting.
+
+    Uses a hybrid approach:
+    1. Fast NLTK tokenization first
+    2. Fragment detection to identify problems
+    3. LLM fallback for suspicious fragments
+
+    Args:
+        paragraph: The text to split into sentences
+        detection_method: Optional override for fragment detection method
+
+    Returns:
+        List of sentence chunks
     """
-    # Check if this is a markdown heading (standalone)
     if re.match(r"^#{1,6}\s+", paragraph):
         return [paragraph.strip()]
 
-    # Check if this is a code block
-    if paragraph.startswith("```"):
+    # Check if this is a code block (fenced with backticks)
+    # Now that we split on blank lines, code blocks come as complete multi-line paragraphs
+    if "```" in paragraph:
         return [paragraph.strip()]
 
     # Reference-style numbered entries: split multiple references into separate chunks
@@ -136,6 +168,21 @@ def split_paragraph_into_sentences(paragraph: str) -> List[str]:
                 else:
                     cleaned_sentences.append(sentence)
 
+        # Check for suspicious fragments before returning
+        method = detection_method or FRAGMENT_DETECTION_METHOD
+        suspicion_detected, suspicion_score = await has_suspicious_fragments(
+            cleaned_sentences, paragraph, method=method
+        )
+
+        if suspicion_detected:
+            logger.info(
+                f"Fragment detection triggered LLM fallback for list item: method={method}, "
+                f"score={suspicion_score}, nltk_fragments={len(cleaned_sentences)}, "
+                f"paragraph={paragraph}..."
+            )
+            result = await llm_tokenize_paragraph(paragraph)
+            return result
+
         return cleaned_sentences
 
     # Use NLTK sentence tokenizer for regular text
@@ -152,7 +199,23 @@ def split_paragraph_into_sentences(paragraph: str) -> List[str]:
         else:
             merged.append(s)
 
-    return merged
+    method = detection_method or FRAGMENT_DETECTION_METHOD
+
+    suspicion_detected, suspicion_score = await has_suspicious_fragments(
+        merged, paragraph, method=method
+    )
+
+    result = merged
+
+    if suspicion_detected:
+        logger.info(
+            f"Fragment detection triggered LLM fallback: method={method}, "
+            f"score={suspicion_score}, nltk_fragments={len(merged)}, "
+            f"paragraph={paragraph}..."
+        )
+        result = await llm_tokenize_paragraph(paragraph)
+
+    return result
 
 
 class DocumentChunkerAgent(AgentProtocol):
@@ -185,15 +248,23 @@ class DocumentChunkerAgent(AgentProtocol):
         # Split document into paragraphs
         paragraphs = split_into_paragraphs(full_document)
 
-        # Process each paragraph into sentence chunks
-        paragraph_objects = []
-        for paragraph_text in paragraphs:
-            if not paragraph_text.strip():
-                continue
+        from lib.run_utils import MAX_CONCURRENT_TASKS
 
-            sentences = split_paragraph_into_sentences(paragraph_text)
-            if sentences:  # Only add non-empty paragraphs
-                paragraph_objects.append(Paragraph(chunks=sentences))
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT_TASKS)
+
+        async def process_paragraph(paragraph_text: str) -> Optional[Paragraph]:
+            if not paragraph_text.strip():
+                return None
+
+            async with semaphore:
+                sentences = await split_paragraph_into_sentences(paragraph_text)
+
+            return Paragraph(chunks=sentences) if sentences else None
+
+        tasks = [process_paragraph(p) for p in paragraphs]
+        results = await asyncio.gather(*tasks)
+
+        paragraph_objects = [p for p in results if p is not None]
 
         return DocumentChunkerResponse(paragraphs=paragraph_objects)
 
