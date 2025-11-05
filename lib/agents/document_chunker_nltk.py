@@ -1,3 +1,4 @@
+import asyncio
 import re
 import logging
 from typing import List, Optional
@@ -245,15 +246,23 @@ class DocumentChunkerAgent(AgentProtocol):
         # Split document into paragraphs
         paragraphs = split_into_paragraphs(full_document)
 
-        # Process each paragraph into sentence chunks
-        paragraph_objects = []
-        for paragraph_text in paragraphs:
-            if not paragraph_text.strip():
-                continue
+        from lib.run_utils import MAX_CONCURRENT_TASKS
 
-            sentences = await split_paragraph_into_sentences(paragraph_text)
-            if sentences:  # Only add non-empty paragraphs
-                paragraph_objects.append(Paragraph(chunks=sentences))
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT_TASKS)
+
+        async def process_paragraph(paragraph_text: str) -> Optional[Paragraph]:
+            if not paragraph_text.strip():
+                return None
+
+            async with semaphore:
+                sentences = await split_paragraph_into_sentences(paragraph_text)
+
+            return Paragraph(chunks=sentences) if sentences else None
+
+        tasks = [process_paragraph(p) for p in paragraphs]
+        results = await asyncio.gather(*tasks)
+
+        paragraph_objects = [p for p in results if p is not None]
 
         return DocumentChunkerResponse(paragraphs=paragraph_objects)
 
