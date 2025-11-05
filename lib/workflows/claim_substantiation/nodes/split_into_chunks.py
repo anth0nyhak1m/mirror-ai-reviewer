@@ -1,7 +1,7 @@
 import logging
 
 from lib.run_utils import call_maybe_async
-from lib.services.llm_text_splitter import LLMTextSplitter
+from lib.services.nltk_text_splitter import NLTKTextSplitter
 from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
     DocumentChunk,
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 #     separators=["\n\n", "\n"],
 #     keep_separator=False,
 # )
-chunker = LLMTextSplitter()
+chunker = NLTKTextSplitter()
 
 
 @handle_workflow_node_errors()
