@@ -9,10 +9,6 @@ from lib.agents.claim_extractor import (
     ClaimResponse,
     claim_extractor_agent,
 )
-from lib.agents.toulmin_claim_extractor import (
-    ToulminClaimResponse,
-    toulmin_claim_extractor_agent,
-)
 from lib.agents.formatting_utils import format_domain_context, format_audience_context
 from tests.conftest import data_path, extract_paragraph_from_chunk
 from tests.datasets.loader import load_dataset
@@ -46,10 +42,8 @@ def _build_cases() -> list[AgentTestCase]:
         cases.append(
             AgentTestCase(
                 name=test_case.name,
-                # agent=claim_extractor_agent,
-                # response_model=ClaimResponse,
-                agent=toulmin_claim_extractor_agent,
-                response_model=ToulminClaimResponse,
+                agent=claim_extractor_agent,
+                response_model=ClaimResponse,
                 prompt_kwargs={
                     "full_document": main_doc.markdown,
                     "paragraph": paragraph,
