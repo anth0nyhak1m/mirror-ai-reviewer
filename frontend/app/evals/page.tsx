@@ -114,7 +114,7 @@ export default function EvalsPage() {
                 accept=".json,application/json"
                 acceptLabel="JSON"
                 multiple={false}
-                maxSize={10}
+                maxSize={80}
                 onFilesChange={handleFilesChange}
               />
             </CardContent>
