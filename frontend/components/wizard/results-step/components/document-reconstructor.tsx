@@ -141,7 +141,7 @@ export function DocumentReconstructorChunkGroup({
         '[&_[data-chunk-selected="false"]]:opacity-50',
       )}
     >
-      <Markdown rehypePlugins={[rehypeRaw]}>{combinedContent}</Markdown>
+      <Markdown rehypePlugins={[[rehypeRaw, { tagfilter: true }]]}>{combinedContent}</Markdown>
     </div>
   );
 }
