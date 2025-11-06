@@ -1,6 +1,6 @@
 'use client';
 
-import { ClaimSubstantiatorStateOutput, AddendumSeverity, AddendumItem } from '@/lib/generated-api';
+import { ClaimSubstantiatorStateSummary, AddendumSeverity, AddendumItem } from '@/lib/generated-api';
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
@@ -10,7 +10,7 @@ import { cn } from '@/lib/utils';
 import { AddendumFilters, AddendumFilterState, filterAddendumItems } from './addendum-filters';
 
 interface LiveReportsTabProps {
-  results: ClaimSubstantiatorStateOutput;
+  results: ClaimSubstantiatorStateSummary;
   isProcessing?: boolean;
 }
 
