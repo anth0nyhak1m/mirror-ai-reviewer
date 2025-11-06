@@ -13,10 +13,12 @@
  */
 
 import * as runtime from '../runtime';
-import type { HTTPValidationError, WorkflowRun, WorkflowRunDetailed } from '../models/index';
+import type { HTTPValidationError, UpdateWorkflowRunRequest, WorkflowRun, WorkflowRunDetailed } from '../models/index';
 import {
   HTTPValidationErrorFromJSON,
   HTTPValidationErrorToJSON,
+  UpdateWorkflowRunRequestFromJSON,
+  UpdateWorkflowRunRequestToJSON,
   WorkflowRunFromJSON,
   WorkflowRunToJSON,
   WorkflowRunDetailedFromJSON,
@@ -29,6 +31,11 @@ export interface DeleteWorkflowRunEndpointApiWorkflowRunWorkflowRunIdDeleteReque
 
 export interface GetWorkflowRunApiWorkflowRunWorkflowRunIdGetRequest {
   workflowRunId: string;
+}
+
+export interface UpdateWorkflowRunEndpointApiWorkflowRunWorkflowRunIdPatchRequest {
+  workflowRunId: string;
+  updateWorkflowRunRequest: UpdateWorkflowRunRequest;
 }
 
 /**
@@ -170,6 +177,66 @@ export class WorkflowsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<Array<WorkflowRun>> {
     const response = await this.listWorkflowRunsApiWorkflowRunsGetRaw(initOverrides);
+    return await response.value();
+  }
+
+  /**
+   * Update a workflow run with the provided fields
+   * Update Workflow Run Endpoint
+   */
+  async updateWorkflowRunEndpointApiWorkflowRunWorkflowRunIdPatchRaw(
+    requestParameters: UpdateWorkflowRunEndpointApiWorkflowRunWorkflowRunIdPatchRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<WorkflowRun>> {
+    if (requestParameters['workflowRunId'] == null) {
+      throw new runtime.RequiredError(
+        'workflowRunId',
+        'Required parameter "workflowRunId" was null or undefined when calling updateWorkflowRunEndpointApiWorkflowRunWorkflowRunIdPatch().',
+      );
+    }
+
+    if (requestParameters['updateWorkflowRunRequest'] == null) {
+      throw new runtime.RequiredError(
+        'updateWorkflowRunRequest',
+        'Required parameter "updateWorkflowRunRequest" was null or undefined when calling updateWorkflowRunEndpointApiWorkflowRunWorkflowRunIdPatch().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    headerParameters['Content-Type'] = 'application/json';
+
+    let urlPath = `/api/workflow-run/{workflow_run_id}`;
+    urlPath = urlPath.replace(`{${'workflow_run_id'}}`, encodeURIComponent(String(requestParameters['workflowRunId'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'PATCH',
+        headers: headerParameters,
+        query: queryParameters,
+        body: UpdateWorkflowRunRequestToJSON(requestParameters['updateWorkflowRunRequest']),
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) => WorkflowRunFromJSON(jsonValue));
+  }
+
+  /**
+   * Update a workflow run with the provided fields
+   * Update Workflow Run Endpoint
+   */
+  async updateWorkflowRunEndpointApiWorkflowRunWorkflowRunIdPatch(
+    requestParameters: UpdateWorkflowRunEndpointApiWorkflowRunWorkflowRunIdPatchRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<WorkflowRun> {
+    const response = await this.updateWorkflowRunEndpointApiWorkflowRunWorkflowRunIdPatchRaw(
+      requestParameters,
+      initOverrides,
+    );
     return await response.value();
   }
 }
