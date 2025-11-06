@@ -41,8 +41,8 @@ export function CitationsTab({ results, isProcessing = false }: CitationsTabProp
                 {chunksWithCitations.length} chunk{chunksWithCitations.length !== 1 ? 's' : ''}.
               </p>
               <p className="text-xs text-blue-700 mt-2">
-                Click on a chunk in the <strong>Document Explorer</strong> tab and expand "Show full analysis results"
-                to see detailed citation information.
+                Click on a chunk in the <strong>Document Explorer</strong> tab and expand &quot;Show full analysis
+                results&quot; to see detailed citation information.
               </p>
             </div>
             {chunksWithCitations.map((chunk) => (

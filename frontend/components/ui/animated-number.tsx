@@ -40,7 +40,7 @@ export function AnimatedNumber({ value, className = '', duration = 500 }: Animat
     frameId = requestAnimationFrame(animate);
 
     return () => cancelAnimationFrame(frameId);
-  }, [value, prevValue, duration]);
+  }, [value, prevValue, duration, displayValue]);
 
   return <span className={className}>{displayValue}</span>;
 }

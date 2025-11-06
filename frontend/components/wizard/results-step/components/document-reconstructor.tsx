@@ -14,7 +14,7 @@ interface DocumentReconstructorProps {
 
 export function DocumentReconstructor({ results, selectedChunkIndex, onChunkSelect }: DocumentReconstructorProps) {
   const parentRef = useRef<HTMLDivElement>(null);
-  const chunks = results.chunks || [];
+  const chunks = useMemo(() => results.chunks || [], [results.chunks]);
 
   // Group chunks by paragraph
   const chunksGroupedByParagraphIndex = useMemo(() => {
@@ -82,7 +82,7 @@ export function DocumentReconstructor({ results, selectedChunkIndex, onChunkSele
         }}
       >
         {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-          const [paragraphIndex, paragraphChunks] = paragraphEntries[virtualRow.index];
+          const [, paragraphChunks] = paragraphEntries[virtualRow.index];
 
           return (
             <div
