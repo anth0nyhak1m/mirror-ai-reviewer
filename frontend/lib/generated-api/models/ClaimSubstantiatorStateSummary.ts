@@ -134,7 +134,7 @@ export interface ClaimSubstantiatorStateSummary {
    */
   referencesValidated?: Array<BibliographyItemValidationOutput>;
   /**
-   * Summary chunk summaries without detailed analysis
+   * Lightweight chunk summaries without detailed analysis
    * @type {Array<DocumentChunkSummary>}
    * @memberof ClaimSubstantiatorStateSummary
    */
