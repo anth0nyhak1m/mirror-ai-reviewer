@@ -1,4 +1,4 @@
-import { ClaimSubstantiatorStateSummary, DocumentChunkSummary, EvidenceAlignmentLevel } from '@/lib/generated-api';
+import { ClaimSubstantiatorStateSummary } from '@/lib/generated-api';
 
 export function useResultsCalculations(detailedResults: ClaimSubstantiatorStateSummary | undefined) {
   if (!detailedResults) {

@@ -88,7 +88,7 @@ class AnalysisService {
               const rawResponse = JSON.parse(xhr.responseText);
               const response = StartAnalysisResponseFromJSON(rawResponse);
               resolve(response);
-            } catch (e) {
+            } catch {
               reject(new Error('Failed to parse response'));
             }
           } else {
