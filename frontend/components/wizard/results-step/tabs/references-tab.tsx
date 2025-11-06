@@ -1,12 +1,12 @@
 'use client';
 
-import { ClaimSubstantiatorStateOutput } from '@/lib/generated-api';
+import { ClaimSubstantiatorStateSummary } from '@/lib/generated-api';
 import { FileText } from 'lucide-react';
 import * as React from 'react';
 import { TabWithLoadingStates } from './tab-with-loading-states';
 
 interface ReferencesTabProps {
-  results: ClaimSubstantiatorStateOutput;
+  results: ClaimSubstantiatorStateSummary;
   isProcessing?: boolean;
 }
 

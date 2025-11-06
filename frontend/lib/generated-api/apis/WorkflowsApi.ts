@@ -13,8 +13,10 @@
  */
 
 import * as runtime from '../runtime';
-import type { HTTPValidationError, WorkflowRun, WorkflowRunDetailed } from '../models/index';
+import type { DocumentChunkOutput, HTTPValidationError, WorkflowRun, WorkflowRunDetailed } from '../models/index';
 import {
+  DocumentChunkOutputFromJSON,
+  DocumentChunkOutputToJSON,
   HTTPValidationErrorFromJSON,
   HTTPValidationErrorToJSON,
   WorkflowRunFromJSON,
@@ -25,6 +27,11 @@ import {
 
 export interface DeleteWorkflowRunEndpointApiWorkflowRunWorkflowRunIdDeleteRequest {
   workflowRunId: string;
+}
+
+export interface GetChunkDetailsEndpointApiWorkflowRunWorkflowRunIdChunkChunkIndexGetRequest {
+  workflowRunId: string;
+  chunkIndex: number;
 }
 
 export interface GetWorkflowRunApiWorkflowRunWorkflowRunIdGetRequest {
@@ -83,6 +90,64 @@ export class WorkflowsApi extends runtime.BaseAPI {
     initOverrides?: RequestInit | runtime.InitOverrideFunction,
   ): Promise<any> {
     const response = await this.deleteWorkflowRunEndpointApiWorkflowRunWorkflowRunIdDeleteRaw(
+      requestParameters,
+      initOverrides,
+    );
+    return await response.value();
+  }
+
+  /**
+   * Get detailed analysis for a specific chunk (lazy loading)
+   * Get Chunk Details Endpoint
+   */
+  async getChunkDetailsEndpointApiWorkflowRunWorkflowRunIdChunkChunkIndexGetRaw(
+    requestParameters: GetChunkDetailsEndpointApiWorkflowRunWorkflowRunIdChunkChunkIndexGetRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<runtime.ApiResponse<DocumentChunkOutput>> {
+    if (requestParameters['workflowRunId'] == null) {
+      throw new runtime.RequiredError(
+        'workflowRunId',
+        'Required parameter "workflowRunId" was null or undefined when calling getChunkDetailsEndpointApiWorkflowRunWorkflowRunIdChunkChunkIndexGet().',
+      );
+    }
+
+    if (requestParameters['chunkIndex'] == null) {
+      throw new runtime.RequiredError(
+        'chunkIndex',
+        'Required parameter "chunkIndex" was null or undefined when calling getChunkDetailsEndpointApiWorkflowRunWorkflowRunIdChunkChunkIndexGet().',
+      );
+    }
+
+    const queryParameters: any = {};
+
+    const headerParameters: runtime.HTTPHeaders = {};
+
+    let urlPath = `/api/workflow-run/{workflow_run_id}/chunk/{chunk_index}`;
+    urlPath = urlPath.replace(`{${'workflow_run_id'}}`, encodeURIComponent(String(requestParameters['workflowRunId'])));
+    urlPath = urlPath.replace(`{${'chunk_index'}}`, encodeURIComponent(String(requestParameters['chunkIndex'])));
+
+    const response = await this.request(
+      {
+        path: urlPath,
+        method: 'GET',
+        headers: headerParameters,
+        query: queryParameters,
+      },
+      initOverrides,
+    );
+
+    return new runtime.JSONApiResponse(response, (jsonValue) => DocumentChunkOutputFromJSON(jsonValue));
+  }
+
+  /**
+   * Get detailed analysis for a specific chunk (lazy loading)
+   * Get Chunk Details Endpoint
+   */
+  async getChunkDetailsEndpointApiWorkflowRunWorkflowRunIdChunkChunkIndexGet(
+    requestParameters: GetChunkDetailsEndpointApiWorkflowRunWorkflowRunIdChunkChunkIndexGetRequest,
+    initOverrides?: RequestInit | runtime.InitOverrideFunction,
+  ): Promise<DocumentChunkOutput> {
+    const response = await this.getChunkDetailsEndpointApiWorkflowRunWorkflowRunIdChunkChunkIndexGetRaw(
       requestParameters,
       initOverrides,
     );

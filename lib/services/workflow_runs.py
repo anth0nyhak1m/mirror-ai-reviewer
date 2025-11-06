@@ -3,19 +3,24 @@ from typing import List, Optional
 from fastapi import HTTPException
 from langgraph.types import StateSnapshot
 from pydantic import BaseModel
+
 from lib.config.database import get_db
 from lib.models.workflow_run import WorkflowRun, WorkflowRunStatus
 from lib.workflows.claim_substantiation.checkpointer import get_checkpointer
 from lib.workflows.claim_substantiation.graph import build_claim_substantiator_graph
 from lib.workflows.claim_substantiation.nodes.rank_issues import rank_issues
-from lib.workflows.claim_substantiation.state import ClaimSubstantiatorState
+from lib.workflows.claim_substantiation.state import (
+    ClaimSubstantiatorState,
+    ClaimSubstantiatorStateSummary,
+    DocumentChunk,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class WorkflowRunDetailed(BaseModel):
     run: WorkflowRun
-    state: Optional[ClaimSubstantiatorState] = None
+    state: Optional[ClaimSubstantiatorStateSummary] = None
 
 
 def _convert_state_snapshot(
@@ -28,6 +33,16 @@ def _convert_state_snapshot(
             f"Error converting state snapshot for thread {state_snapshot.config['configurable']['thread_id']} (possibly an old state schema version): {e}"
         )
         return None
+
+
+def _convert_to_summary_state(
+    full_state: ClaimSubstantiatorState,
+) -> ClaimSubstantiatorStateSummary:
+    """Convert full state to summary state with lightweight chunks"""
+    return ClaimSubstantiatorStateSummary(
+        **full_state.model_dump(exclude={"chunks"}),
+        chunks=[chunk.to_summary() for chunk in full_state.chunks],
+    )
 
 
 async def get_workflow_run_detailed(id: str) -> WorkflowRunDetailed:
@@ -45,13 +60,16 @@ async def get_workflow_run_detailed(id: str) -> WorkflowRunDetailed:
             {"configurable": {"thread_id": run.langgraph_thread_id}}
         )
 
-    state = _convert_state_snapshot(state)
+    full_state = _convert_state_snapshot(state)
+
+    if full_state is None:
+        return WorkflowRunDetailed(run=run, state=None)
 
     # TODO: temporarily rank issues to be able to display them in the UI - add to graph later
-    if state is not None:
-        state.ranked_issues = rank_issues(state).get("ranked_issues", [])
+    full_state.ranked_issues = rank_issues(full_state).get("ranked_issues", [])
+    summary_state = _convert_to_summary_state(full_state)
 
-    return WorkflowRunDetailed(run=run, state=state)
+    return WorkflowRunDetailed(run=run, state=summary_state)
 
 
 async def get_workflow_runs() -> List[WorkflowRun]:
@@ -157,3 +175,32 @@ async def delete_workflow_run(workflow_run_id: str) -> None:
         raise HTTPException(
             status_code=500, detail=f"Error deleting checkpoint data: {str(e)}"
         )
+
+
+async def get_chunk_details(workflow_run_id: str, chunk_index: int) -> DocumentChunk:
+    """
+    Get detailed analysis for a specific chunk.
+    Returns the full chunk with all analysis (used for lazy loading chunk details).
+    """
+    with get_db() as db:
+        run = db.query(WorkflowRun).filter(WorkflowRun.id == workflow_run_id).first()
+
+    if run is None:
+        raise HTTPException(status_code=404, detail="Workflow run not found")
+
+    graph = build_claim_substantiator_graph()
+    async with get_checkpointer() as checkpointer:
+        app = graph.compile(checkpointer=checkpointer)
+        state = await app.aget_state(
+            {"configurable": {"thread_id": run.langgraph_thread_id}}
+        )
+
+    full_state = _convert_state_snapshot(state)
+    if full_state is None:
+        raise HTTPException(status_code=404, detail="Workflow state not found")
+
+    chunk = next((c for c in full_state.chunks if c.chunk_index == chunk_index), None)
+    if chunk is None:
+        raise HTTPException(status_code=404, detail=f"Chunk {chunk_index} not found")
+
+    return chunk

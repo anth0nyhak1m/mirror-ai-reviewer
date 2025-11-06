@@ -13,13 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
-import type { ClaimSubstantiatorStateOutput } from './ClaimSubstantiatorStateOutput';
+import type { ClaimSubstantiatorStateSummary } from './ClaimSubstantiatorStateSummary';
 import {
-  ClaimSubstantiatorStateOutputFromJSON,
-  ClaimSubstantiatorStateOutputFromJSONTyped,
-  ClaimSubstantiatorStateOutputToJSON,
-  ClaimSubstantiatorStateOutputToJSONTyped,
-} from './ClaimSubstantiatorStateOutput';
+  ClaimSubstantiatorStateSummaryFromJSON,
+  ClaimSubstantiatorStateSummaryFromJSONTyped,
+  ClaimSubstantiatorStateSummaryToJSON,
+  ClaimSubstantiatorStateSummaryToJSONTyped,
+} from './ClaimSubstantiatorStateSummary';
 import type { WorkflowRun } from './WorkflowRun';
 import {
   WorkflowRunFromJSON,
@@ -42,10 +42,10 @@ export interface WorkflowRunDetailed {
   run: WorkflowRun;
   /**
    *
-   * @type {ClaimSubstantiatorStateOutput}
+   * @type {ClaimSubstantiatorStateSummary}
    * @memberof WorkflowRunDetailed
    */
-  state?: ClaimSubstantiatorStateOutput | null;
+  state?: ClaimSubstantiatorStateSummary | null;
 }
 
 /**
@@ -66,7 +66,7 @@ export function WorkflowRunDetailedFromJSONTyped(json: any, ignoreDiscriminator:
   }
   return {
     run: WorkflowRunFromJSON(json['run']),
-    state: json['state'] == null ? undefined : ClaimSubstantiatorStateOutputFromJSON(json['state']),
+    state: json['state'] == null ? undefined : ClaimSubstantiatorStateSummaryFromJSON(json['state']),
   };
 }
 
@@ -84,6 +84,6 @@ export function WorkflowRunDetailedToJSONTyped(
 
   return {
     run: WorkflowRunToJSON(value['run']),
-    state: ClaimSubstantiatorStateOutputToJSON(value['state']),
+    state: ClaimSubstantiatorStateSummaryToJSON(value['state']),
   };
 }

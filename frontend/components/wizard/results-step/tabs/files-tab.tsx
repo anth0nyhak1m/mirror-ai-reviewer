@@ -1,11 +1,11 @@
 'use client';
 
 import { LabeledValue } from '@/components/labeled-value';
-import { ClaimSubstantiatorStateOutput } from '@/lib/generated-api';
+import { ClaimSubstantiatorStateSummary } from '@/lib/generated-api';
 import * as React from 'react';
 
 interface FilesTabProps {
-  results: ClaimSubstantiatorStateOutput;
+  results: ClaimSubstantiatorStateSummary;
 }
 
 export function FilesTab({ results }: FilesTabProps) {

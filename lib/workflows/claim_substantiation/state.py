@@ -72,6 +72,19 @@ class SubstantiationWorkflowConfig(BaseModel):
     )
 
 
+class DocumentChunkSummary(ChunkWithIndex):
+    """Summary chunk info without detailed analysis (for API responses)"""
+
+    has_claims: bool = Field(default=False, description="Whether this chunk has claims")
+    claims_count: int = Field(default=0, description="Number of claims in this chunk")
+    has_citations: bool = Field(
+        default=False, description="Whether this chunk has citations"
+    )
+    citations_count: int = Field(
+        default=0, description="Number of citations in this chunk"
+    )
+
+
 class DocumentChunk(ChunkWithIndex):
     """Independent chunk response object with all processing results"""
 
@@ -83,6 +96,21 @@ class DocumentChunk(ChunkWithIndex):
     citation_suggestions: List[CitationSuggestionResultWithClaimIndex] = []
     live_reports_analysis: List[EvidenceWeighterResponseWithClaimIndex] = []
     inference_validations: List[InferenceValidationResponseWithClaimIndex] = []
+
+    def to_summary(self) -> DocumentChunkSummary:
+        """Convert full chunk to lightweight summary"""
+        claims_list = self.claims.claims if self.claims else []
+        citations_list = self.citations.citations if self.citations else []
+
+        return DocumentChunkSummary(
+            content=self.content,
+            chunk_index=self.chunk_index,
+            paragraph_index=self.paragraph_index,
+            has_claims=len(claims_list) > 0,
+            claims_count=len(claims_list),
+            has_citations=len(citations_list) > 0,
+            citations_count=len(citations_list),
+        )
 
 
 def conciliate_chunks(
@@ -237,6 +265,31 @@ class ClaimSubstantiatorState(BaseModel):
     def get_paragraph(self, paragraph_index: int) -> str:
         paragraph_chunks = self.get_paragraph_chunks(paragraph_index)
         return "\n".join([chunk.content for chunk in paragraph_chunks])
+
+
+class ClaimSubstantiatorStateSummary(BaseModel):
+    """Summary version of ClaimSubstantiatorState with chunk summaries instead of full chunks"""
+
+    # Inputs
+    file: FileDocument
+    supporting_files: Optional[List[FileDocument]] = None
+    config: SubstantiationWorkflowConfig
+
+    # Outputs - using lightweight chunks
+    workflow_run_id: Optional[str] = None
+    references: List[BibliographyItem] = []
+    references_validated: List[BibliographyItemValidation] = []
+    chunks: List[DocumentChunkSummary] = Field(
+        default_factory=list,
+        description="Lightweight chunk summaries without detailed analysis",
+    )
+    errors: List[WorkflowError] = []
+    main_document_summary: Optional[DocumentSummary] = None
+    supporting_documents_summaries: Optional[Dict[int, DocumentSummary]] = None
+    live_reports_analysis: List[EvidenceWeighterResponseWithClaimIndex] = []
+    literature_review: Optional[LiteratureReviewResponse] = None
+    addendum: Optional[Addendum] = None
+    ranked_issues: List[DocumentIssue] = []
 
 
 class ChunkReevaluationRequest(BaseModel):

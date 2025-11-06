@@ -8,9 +8,11 @@ from lib.models.workflow_run import WorkflowRun
 from lib.services.workflow_runs import (
     WorkflowRunDetailed,
     delete_workflow_run,
+    get_chunk_details,
     get_workflow_run_detailed,
     get_workflow_runs,
 )
+from lib.workflows.claim_substantiation.state import DocumentChunk
 
 router = APIRouter(tags=["workflows"])
 
@@ -25,6 +27,15 @@ async def list_workflow_runs():
 async def get_workflow_run(workflow_run_id: str):
     """Get detailed workflow run information including state"""
     return await get_workflow_run_detailed(workflow_run_id)
+
+
+@router.get(
+    "/api/workflow-run/{workflow_run_id}/chunk/{chunk_index}",
+    response_model=DocumentChunk,
+)
+async def get_chunk_details_endpoint(workflow_run_id: str, chunk_index: int):
+    """Get detailed analysis for a specific chunk (lazy loading)"""
+    return await get_chunk_details(workflow_run_id, chunk_index)
 
 
 @router.delete("/api/workflow-run/{workflow_run_id}")
