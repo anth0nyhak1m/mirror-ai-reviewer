@@ -39,7 +39,7 @@ export const UploadSection = ({
       onFilesChange={onFilesChange}
       accept=".pdf,.doc,.docx,.txt,.md,.rtf,.html"
       multiple={multiple}
-      maxSize={10}
+      maxSize={80}
       className="h-36 transition-all duration-200"
       compact
     />
