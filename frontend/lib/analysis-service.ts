@@ -66,6 +66,8 @@ class AnalysisService {
         if (config.runSuggestCitations !== undefined)
           formData.append('run_suggest_citations', String(config.runSuggestCitations));
         if (config.runLiveReports !== undefined) formData.append('run_live_reports', String(config.runLiveReports));
+        if (config.runReferenceValidation !== undefined)
+          formData.append('run_reference_validation', String(config.runReferenceValidation));
         if (config.domain) formData.append('domain', config.domain);
         if (config.targetAudience) formData.append('target_audience', config.targetAudience);
         if (config.documentPublicationDate)
@@ -88,7 +90,7 @@ class AnalysisService {
               const rawResponse = JSON.parse(xhr.responseText);
               const response = StartAnalysisResponseFromJSON(rawResponse);
               resolve(response);
-            } catch (e) {
+            } catch {
               reject(new Error('Failed to parse response'));
             }
           } else {
