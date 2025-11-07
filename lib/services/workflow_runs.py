@@ -23,6 +23,10 @@ class WorkflowRunDetailed(BaseModel):
     state: Optional[ClaimSubstantiatorStateSummary] = None
 
 
+class UpdateWorkflowRunRequest(BaseModel):
+    title: Optional[str] = None
+
+
 def _convert_state_snapshot(
     state_snapshot: StateSnapshot,
 ) -> Optional[ClaimSubstantiatorState]:
@@ -153,6 +157,36 @@ def get_workflow_run_id_by_session(session_id: str) -> Optional[str]:
             .first()
         )
         return str(run.id) if run else None
+
+
+async def update_workflow_run(
+    workflow_run_id: str, request: UpdateWorkflowRunRequest
+) -> WorkflowRun:
+    """
+    Update a workflow run with the provided fields.
+
+    Args:
+        workflow_run_id: The workflow run UUID
+        request: UpdateWorkflowRunRequest containing fields to update
+
+    Returns:
+        The updated WorkflowRun
+
+    Raises:
+        HTTPException: If the workflow run is not found
+    """
+    with get_db() as db:
+        run = db.query(WorkflowRun).filter(WorkflowRun.id == workflow_run_id).first()
+
+        if run is None:
+            raise HTTPException(status_code=404, detail="Workflow run not found")
+
+        if request.title is not None:
+            run.title = request.title
+
+        db.commit()
+        db.refresh(run)
+        return run
 
 
 async def delete_workflow_run(workflow_run_id: str) -> None:
