@@ -1,6 +1,6 @@
 'use client';
 
-import { ClaimSubstantiatorStateOutput } from '@/lib/generated-api';
+import { ClaimSubstantiatorStateSummary } from '@/lib/generated-api';
 import * as React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, BookOpen } from 'lucide-react';
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ReferenceFilters, FilterState, filterReferences } from './reference-filters';
 
 interface LiteratureReviewTabProps {
-  results: ClaimSubstantiatorStateOutput;
+  results: ClaimSubstantiatorStateSummary;
   isProcessing?: boolean;
 }
 

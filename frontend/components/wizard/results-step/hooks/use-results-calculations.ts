@@ -1,6 +1,6 @@
-import { ClaimSubstantiatorStateOutput, EvidenceAlignmentLevel } from '@/lib/generated-api';
+import { ClaimSubstantiatorStateSummary } from '@/lib/generated-api';
 
-export function useResultsCalculations(detailedResults: ClaimSubstantiatorStateOutput | undefined) {
+export function useResultsCalculations(detailedResults: ClaimSubstantiatorStateSummary | undefined) {
   if (!detailedResults) {
     return {
       totalClaims: 0,
@@ -13,30 +13,20 @@ export function useResultsCalculations(detailedResults: ClaimSubstantiatorStateO
     };
   }
 
-  const totalClaims = detailedResults.chunks?.reduce((sum, chunk) => sum + (chunk.claims?.claims?.length || 0), 0) || 0;
+  const totalClaims = detailedResults.chunks?.reduce((sum, chunk) => sum + (chunk.claimsCount || 0), 0) || 0;
 
-  const totalCitations =
-    detailedResults.chunks?.reduce((sum, chunk) => sum + (chunk.citations?.citations?.length || 0), 0) || 0;
+  const totalCitations = detailedResults.chunks?.reduce((sum, chunk) => sum + (chunk.citationsCount || 0), 0) || 0;
 
-  const totalUnsubstantiated =
-    detailedResults.chunks?.reduce(
-      (sum, chunk) =>
-        sum +
-        (chunk.substantiations?.filter((sub) => sub.evidenceAlignment === EvidenceAlignmentLevel.Unsupported).length ||
-          0),
-      0,
-    ) || 0;
+  const totalUnsubstantiated = 0;
 
-  const chunksWithClaims =
-    detailedResults.chunks?.filter((chunk) => (chunk.claims?.claims?.length || 0) > 0).length || 0;
+  const chunksWithClaims = detailedResults.chunks?.filter((chunk) => chunk.hasClaims).length || 0;
 
-  const chunksWithCitations =
-    detailedResults.chunks?.filter((chunk) => (chunk.citations?.citations?.length || 0) > 0).length || 0;
+  const chunksWithCitations = detailedResults.chunks?.filter((chunk) => chunk.hasCitations).length || 0;
 
   const supportedReferences =
     detailedResults.references?.filter((ref) => ref.hasAssociatedSupportingDocument).length || 0;
 
-  const totalChunks = Math.max(detailedResults.chunks?.length || 0, detailedResults.chunks?.length || 0);
+  const totalChunks = detailedResults.chunks?.length || 0;
 
   return {
     totalClaims,

@@ -166,9 +166,7 @@ export function AgentSummaryCard({ summary, showOnlyFailed = false }: AgentSumma
               ))} */}
 
             {sortedGroupedTestCases
-              .filter(
-                ([_, testCases]) => !showOnlyFailed || testCases.some((testCase) => testCase.outcome === 'failed'),
-              )
+              .filter(([, testCases]) => !showOnlyFailed || testCases.some((testCase) => testCase.outcome === 'failed'))
               .map(([name, testCases], index) => (
                 <GroupedTestCaseItem key={index} name={name} testCases={testCases} consistencyProbability={0} />
               ))}

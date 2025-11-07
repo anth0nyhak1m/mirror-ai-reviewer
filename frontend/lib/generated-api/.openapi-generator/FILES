@@ -35,10 +35,12 @@ models/ClaimResponse.ts
 models/ClaimSubstantiationResultWithClaimIndex.ts
 models/ClaimSubstantiatorStateInput.ts
 models/ClaimSubstantiatorStateOutput.ts
+models/ClaimSubstantiatorStateSummary.ts
 models/Claims.ts
 models/ConfidenceInRecommendation.ts
 models/DocumentChunkInput.ts
 models/DocumentChunkOutput.ts
+models/DocumentChunkSummary.ts
 models/DocumentIssue.ts
 models/DocumentReferenceFactors.ts
 models/DocumentSummary.ts

@@ -1,7 +1,8 @@
 import { Markdown } from '@/components/markdown';
-import { ClaimSubstantiatorStateOutput, DocumentChunkOutput } from '@/lib/generated-api';
+import type { ClaimSubstantiatorStateOutput, DocumentChunkOutput } from '@/lib/generated-api';
 import { getSeverity } from '@/lib/severity';
 import { cn } from '@/lib/utils';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useEffect, useMemo, useRef } from 'react';
 import rehypeRaw from 'rehype-raw';
 import { detectBlockSyntax, extractChunkContent } from '../document-reconstruction-utils';
@@ -13,43 +14,102 @@ interface DocumentReconstructorProps {
 }
 
 export function DocumentReconstructor({ results, selectedChunkIndex, onChunkSelect }: DocumentReconstructorProps) {
+  const parentRef = useRef<HTMLDivElement>(null);
+  const chunks = useMemo(() => results.chunks || [], [results.chunks]);
+
+  // Group chunks by paragraph
+  const chunksGroupedByParagraphIndex = useMemo(() => {
+    return chunks.reduce(
+      (acc, chunk) => {
+        acc[chunk.paragraphIndex] = acc[chunk.paragraphIndex] || [];
+        acc[chunk.paragraphIndex].push(chunk);
+        return acc;
+      },
+      {} as Record<number, DocumentChunkOutput[]>,
+    );
+  }, [chunks]);
+
+  // Create ordered array of paragraph entries for virtual list
+  const paragraphEntries = useMemo(() => {
+    return Object.entries(chunksGroupedByParagraphIndex).sort(([aIndex], [bIndex]) => Number(aIndex) - Number(bIndex));
+  }, [chunksGroupedByParagraphIndex]);
+
+  // Calculate overscan based on viewport height for better UX
+  // More items will be rendered to fill the viewport + buffer
+  const estimatedParagraphHeight = 150;
+  const viewportBasedOverscan = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const viewportHeight = window.innerHeight;
+      // Render enough to fill 2x viewport (1x above + 1x below visible area)
+      return Math.ceil(viewportHeight / estimatedParagraphHeight);
+    }
+    return 10; // Default fallback
+  }, []);
+
+  // Create virtualizer for paragraphs
+  const rowVirtualizer = useVirtualizer({
+    count: paragraphEntries.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => estimatedParagraphHeight,
+    overscan: viewportBasedOverscan,
+  });
+
   // Scroll to selected chunk when selection changes
   useEffect(() => {
     if (selectedChunkIndex !== null) {
-      const element = document.querySelector(`[data-chunk-index="${selectedChunkIndex}"]`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Find which paragraph contains the selected chunk
+      const chunk = chunks.find((c) => c.chunkIndex === selectedChunkIndex);
+      if (chunk) {
+        const paragraphRowIndex = paragraphEntries.findIndex(([pIndex]) => Number(pIndex) === chunk.paragraphIndex);
+        if (paragraphRowIndex !== -1) {
+          rowVirtualizer.scrollToIndex(paragraphRowIndex, {
+            align: 'center',
+            behavior: 'smooth',
+          });
+        }
       }
     }
-  }, [selectedChunkIndex]);
-
-  const chunks = useMemo(() => results.chunks || [], [results.chunks]);
-
-  const chunksGroupedByParagraphIndex = useMemo(
-    () =>
-      chunks.reduce(
-        (acc, chunk) => {
-          acc[chunk.paragraphIndex] = acc[chunk.paragraphIndex] || [];
-          acc[chunk.paragraphIndex].push(chunk);
-          return acc;
-        },
-        {} as Record<number, DocumentChunkOutput[]>,
-      ),
-    [chunks],
-  );
+  }, [selectedChunkIndex, chunks, paragraphEntries, rowVirtualizer]);
 
   return (
-    <div className="space-y-2">
-      {Object.entries(chunksGroupedByParagraphIndex).map(([paragraphIndex, chunks]) => (
-        <div key={paragraphIndex} className="space-y-2">
-          <DocumentReconstructorChunkGroup
-            chunks={chunks}
-            results={results}
-            selectedChunkIndex={selectedChunkIndex}
-            onChunkSelect={onChunkSelect}
-          />
-        </div>
-      ))}
+    <div ref={parentRef} className="h-full overflow-y-auto">
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+          paddingTop: '1rem',
+          paddingBottom: '4rem',
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+          const [, paragraphChunks] = paragraphEntries[virtualRow.index];
+
+          return (
+            <div
+              key={virtualRow.key}
+              data-index={virtualRow.index}
+              ref={rowVirtualizer.measureElement}
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                transform: `translateY(${virtualRow.start}px)`,
+              }}
+            >
+              <div className="pb-2">
+                <DocumentReconstructorChunkGroup
+                  chunks={paragraphChunks}
+                  results={results}
+                  selectedChunkIndex={selectedChunkIndex}
+                  onChunkSelect={onChunkSelect}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -111,7 +171,7 @@ export function DocumentReconstructorChunkGroup({
     }
 
     const handleClick = (event: Event) => {
-      const target = event.target as HTMLElement;
+      const target = event.currentTarget as HTMLElement;
       const chunkIndex = target.getAttribute('data-chunk-index');
       if (chunkIndex && onChunkSelect) {
         onChunkSelect(parseInt(chunkIndex));
