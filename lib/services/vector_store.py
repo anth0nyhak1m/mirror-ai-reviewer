@@ -14,7 +14,7 @@ from lib.config.env import config
 logger = logging.getLogger(__name__)
 
 # RAG retrieval settings
-RAG_TOP_K = 30  # Number of passages to retrieve per query
+RAG_TOP_K = 20  # Number of passages to retrieve per query
 
 # RAG chunking settings (all in characters)
 RAG_CHUNK_SIZE = 2000  # Characters per chunk when indexing documents

@@ -182,6 +182,7 @@ if __name__ == "__main__":
                 file_path="/tmp/test.md",
                 file_type="text/markdown",
                 markdown="# Test Document\n\nBitcoin is a decentralized digital currency.",
+                markdown_token_count=100,
             ),
             config=SubstantiationWorkflowConfig(
                 run_live_reports=True,
