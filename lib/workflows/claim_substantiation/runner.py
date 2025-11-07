@@ -124,6 +124,7 @@ async def _execute(state: ClaimSubstantiatorState):
         run_suggest_citations=state.config.run_suggest_citations,
         use_rag=state.config.use_rag,
         run_live_reports=state.config.run_live_reports,
+        run_reference_validation=state.config.run_reference_validation,
     )
 
     # Generate a fresh session ID if not provided to avoid checkpoint conflicts

@@ -50,6 +50,12 @@ export interface SubstantiationWorkflowConfig {
    */
   runLiveReports?: boolean;
   /**
+   * Whether to validate references using web search
+   * @type {boolean}
+   * @memberof SubstantiationWorkflowConfig
+   */
+  runReferenceValidation?: boolean;
+  /**
    *
    * @type {Date}
    * @memberof SubstantiationWorkflowConfig
@@ -111,6 +117,7 @@ export function SubstantiationWorkflowConfigFromJSONTyped(
     runSuggestCitations: json['run_suggest_citations'] == null ? undefined : json['run_suggest_citations'],
     useRag: json['use_rag'] == null ? undefined : json['use_rag'],
     runLiveReports: json['run_live_reports'] == null ? undefined : json['run_live_reports'],
+    runReferenceValidation: json['run_reference_validation'] == null ? undefined : json['run_reference_validation'],
     documentPublicationDate:
       json['document_publication_date'] == null ? undefined : new Date(json['document_publication_date']),
     targetChunkIndices: json['target_chunk_indices'] == null ? undefined : json['target_chunk_indices'],
@@ -139,6 +146,7 @@ export function SubstantiationWorkflowConfigToJSONTyped(
     run_suggest_citations: value['runSuggestCitations'],
     use_rag: value['useRag'],
     run_live_reports: value['runLiveReports'],
+    run_reference_validation: value['runReferenceValidation'],
     document_publication_date:
       value['documentPublicationDate'] === null
         ? null

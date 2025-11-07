@@ -50,6 +50,9 @@ class SubstantiationWorkflowConfig(BaseModel):
     run_live_reports: bool = Field(
         default=False, description="Whether to run the live reports analysis"
     )
+    run_reference_validation: bool = Field(
+        default=False, description="Whether to validate references using web search"
+    )
     document_publication_date: Optional[date] = Field(
         default=None,
         description="Publication date (YYYY-MM-DD) of the document for literature review and live reports",
