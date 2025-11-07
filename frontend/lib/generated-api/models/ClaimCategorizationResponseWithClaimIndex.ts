@@ -40,7 +40,7 @@ export interface ClaimCategorizationResponseWithClaimIndex {
    */
   claimCategory: ClaimCategory;
   /**
-   * Reasoning for the category assignment, maximum of 200 tokens.
+   * One-line reason for the category assignment.
    * @type {string}
    * @memberof ClaimCategorizationResponseWithClaimIndex
    */

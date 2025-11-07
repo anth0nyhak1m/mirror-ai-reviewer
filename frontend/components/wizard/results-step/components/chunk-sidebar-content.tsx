@@ -1,6 +1,9 @@
 import { Badge } from '@/components/ui/badge';
-import { ChunkReevaluationResponse, ClaimSubstantiatorStateOutput, DocumentIssue } from '@/lib/generated-api';
-import { ChevronDown, ChevronRight, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useChunkDetails } from '@/lib/hooks/use-chunk-details';
+import type { ChunkReevaluationResponse, ClaimSubstantiatorStateSummary, DocumentIssue } from '@/lib/generated-api';
+import { ChevronDown, ChevronRight, Loader2, X } from 'lucide-react';
+import { useState } from 'react';
 import { ChunkAnalysisCard } from './chunk-analysis-card';
 import { ChunkEvalGenerator } from './chunk-eval-generator';
 import { ChunkReevaluateControl } from './chunk-reevaluate-control';
@@ -8,12 +11,11 @@ import { ChunkStatusBadge, useShouldShowStatusBadge } from './chunk-status-badge
 import { ClaimAnalysisCard } from './claim-analysis-card';
 import { DocumentIssuesList } from './document-issues-list';
 import { ErrorsCard } from './errors-card';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 
 export interface ChunkSidebarContentProps {
-  results: ClaimSubstantiatorStateOutput;
+  results: ClaimSubstantiatorStateSummary;
   chunkIndex: number | null;
+  workflowRunId?: string;
   isWorkflowRunning: boolean;
   onSelectIssue: (issue: DocumentIssue) => void;
   onChunkReevaluation: (response: ChunkReevaluationResponse) => void;
@@ -23,41 +25,47 @@ export interface ChunkSidebarContentProps {
 export function ChunkSidebarContent({
   results,
   chunkIndex,
+  workflowRunId,
   isWorkflowRunning,
   onSelectIssue,
   onChunkReevaluation,
   onClearChunkSelection,
 }: ChunkSidebarContentProps) {
-  const chunkErrors = results.errors?.filter((error) => error.chunkIndex === chunkIndex) || [];
-  const references = results.references || [];
-  const chunk = results.chunks?.find((chunk) => chunk.chunkIndex === chunkIndex);
-  const claims = chunk?.claims?.claims || [];
-  const claimCommonKnowledgeResults = chunk?.claimCommonKnowledgeResults || [];
-  const substantiations = chunk?.substantiations || [];
-  const supportingFiles = results.supportingFiles || [];
-  const shouldShowStatusBadge = useShouldShowStatusBadge(isWorkflowRunning);
-  const citationSuggestions = chunk?.citationSuggestions || [];
-  const liveReportsAnalysis = chunk?.liveReportsAnalysis || [];
-  const claimCategories = chunk?.claimCategories || [];
-  const inferenceValidations = chunk?.inferenceValidations || [];
-  const issues = results.rankedIssues?.filter((issue) => issue.chunkIndex === chunkIndex) || [];
-
   const [showAdvancedAnalysis, setShowAdvancedAnalysis] = useState(false);
 
-  if (!chunk) {
+  const { data: chunkDetails, isLoading: isLoadingDetails } = useChunkDetails(
+    workflowRunId || '',
+    chunkIndex,
+    showAdvancedAnalysis && !!workflowRunId,
+  );
+
+  const chunkErrors = results.errors?.filter((error) => error.chunkIndex === chunkIndex) ?? [];
+  const references = results.references ?? [];
+  const issues = results.rankedIssues?.filter((issue) => issue.chunkIndex === chunkIndex) ?? [];
+  const supportingFiles = results.supportingFiles ?? [];
+
+  const lightweightChunk = results.chunks?.find((chunk) => chunk.chunkIndex === chunkIndex);
+  const shouldShowStatusBadge = useShouldShowStatusBadge(isWorkflowRunning);
+
+  const claims = chunkDetails?.claims?.claims ?? [];
+
+  if (!lightweightChunk) {
     return null;
   }
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        {shouldShowStatusBadge && <ChunkStatusBadge chunk={chunk} isWorkflowRunning={isWorkflowRunning} />}
+        {shouldShowStatusBadge && chunkDetails && (
+          <ChunkStatusBadge chunk={chunkDetails} isWorkflowRunning={isWorkflowRunning} />
+        )}
 
         <Badge variant="secondary" className="gap-1 pl-2.5 pr-1">
-          Chunk #{chunk.chunkIndex}
+          Chunk #{lightweightChunk.chunkIndex}
           <button
             onClick={onClearChunkSelection}
-            className="ml-0.5 rounded-sm hover:bg-muted-foreground/20 p-0.5 cursor-pointer"
+            className="ml-0.5 rounded-sm hover:bg-muted-foreground/20 p-0.5"
+            aria-label="Clear chunk selection"
           >
             <X className="h-3 w-3" />
           </button>
@@ -68,9 +76,7 @@ export function ChunkSidebarContent({
 
       <DocumentIssuesList issues={issues} onSelect={onSelectIssue} />
 
-      {issues.length === 0 && (
-        <div className="text-sm text-muted-foreground italic">No issues found in this chunk.</div>
-      )}
+      {issues.length === 0 && <p className="text-sm text-muted-foreground italic">No issues found in this chunk.</p>}
 
       <div className="flex items-center gap-2 justify-end">
         <Button variant="outline" size="xs" onClick={() => setShowAdvancedAnalysis(!showAdvancedAnalysis)}>
@@ -90,35 +96,50 @@ export function ChunkSidebarContent({
 
       {showAdvancedAnalysis && (
         <>
-          {claims.map((claim, index) => (
-            <ClaimAnalysisCard
-              key={index}
-              claim={claim}
-              claimCategory={claimCategories.find((c) => c.claimIndex === index)}
-              commonKnowledgeResult={claimCommonKnowledgeResults.find((c) => c.claimIndex === index)}
-              substantiation={substantiations.find((s) => s.claimIndex === index)}
-              citationSuggestion={citationSuggestions.find((c) => c.claimIndex === index)}
-              liveReportsAnalysis={liveReportsAnalysis.find((l) => l.claimIndex === index)}
-              inferenceValidation={inferenceValidations.find((i) => i.claimIndex === index)}
-              claimIndex={index}
-              totalClaims={claims.length}
-              references={references}
-              supportingFiles={results.supportingFiles || []}
-              workflowRunId={results.workflowRunId ?? undefined}
-              chunkIndex={chunkIndex ?? undefined}
-            />
-          ))}
+          {isLoadingDetails && (
+            <div className="flex items-center justify-center py-8">
+              <div className="text-center space-y-3">
+                <Loader2 className="h-6 w-6 animate-spin text-primary mx-auto" />
+                <p className="text-sm text-muted-foreground">Loading detailed analysis...</p>
+              </div>
+            </div>
+          )}
 
-          <ChunkAnalysisCard chunk={chunk} references={references} supportingFiles={supportingFiles} />
+          {!isLoadingDetails && (
+            <>
+              {claims.map((claim, index) => (
+                <ClaimAnalysisCard
+                  key={index}
+                  claim={claim}
+                  claimCategory={chunkDetails?.claimCategories?.find((c) => c.claimIndex === index)}
+                  commonKnowledgeResult={chunkDetails?.claimCommonKnowledgeResults?.find((c) => c.claimIndex === index)}
+                  substantiation={chunkDetails?.substantiations?.find((s) => s.claimIndex === index)}
+                  citationSuggestion={chunkDetails?.citationSuggestions?.find((c) => c.claimIndex === index)}
+                  liveReportsAnalysis={chunkDetails?.liveReportsAnalysis?.find((l) => l.claimIndex === index)}
+                  inferenceValidation={chunkDetails?.inferenceValidations?.find((i) => i.claimIndex === index)}
+                  claimIndex={index}
+                  totalClaims={claims.length}
+                  references={references}
+                  supportingFiles={supportingFiles}
+                  workflowRunId={results.workflowRunId ?? undefined}
+                  chunkIndex={chunkIndex ?? undefined}
+                />
+              ))}
 
-          <ChunkReevaluateControl
-            chunkIndex={chunk.chunkIndex}
-            originalState={results}
-            onReevaluation={onChunkReevaluation}
-            sessionId={results.config.sessionId}
-          />
+              {chunkDetails && (
+                <ChunkAnalysisCard chunk={chunkDetails} references={references} supportingFiles={supportingFiles} />
+              )}
 
-          <ChunkEvalGenerator chunkIndex={chunk.chunkIndex} originalState={results} />
+              <ChunkReevaluateControl
+                chunkIndex={lightweightChunk.chunkIndex}
+                originalState={results}
+                onReevaluation={onChunkReevaluation}
+                sessionId={results.config?.sessionId}
+              />
+
+              <ChunkEvalGenerator chunkIndex={lightweightChunk.chunkIndex} originalState={results} />
+            </>
+          )}
         </>
       )}
     </div>

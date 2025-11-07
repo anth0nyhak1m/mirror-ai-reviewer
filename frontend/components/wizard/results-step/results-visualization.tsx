@@ -2,7 +2,7 @@
 
 import { analysisService } from '@/lib/analysis-service';
 import { downloadFile, generateEvalFilename } from '@/lib/file-download';
-import { ChunkReevaluationResponse, ClaimSubstantiatorStateOutput } from '@/lib/generated-api';
+import { ChunkReevaluationResponse, ClaimSubstantiatorStateSummary } from '@/lib/generated-api';
 import { FileText } from 'lucide-react';
 import * as React from 'react';
 import { Button } from '../../ui/button';
@@ -15,7 +15,7 @@ import { CitationsTab, FilesTab, LiteratureReviewTab, LiveReportsTab, References
 import { DocumentExplorerTab } from './tabs/document-explorer-tab';
 
 interface ResultsVisualizationProps {
-  results: ClaimSubstantiatorStateOutput | undefined;
+  results: ClaimSubstantiatorStateSummary | undefined;
   onChunkReevaluation: (response: ChunkReevaluationResponse) => void;
   isProcessing?: boolean;
 }
@@ -98,7 +98,9 @@ export function ResultsVisualization({
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
       <Card>
-        <CardContent className="p-6">{renderActiveTab()}</CardContent>
+        <CardContent className={activeTab === 'document-explorer' ? 'p-3 h-[calc(100vh-16rem)]' : 'p-3'}>
+          {renderActiveTab()}
+        </CardContent>
       </Card>
 
       <div className="flex justify-end">

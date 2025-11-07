@@ -24,7 +24,6 @@ export function GroupedTestCaseItem({ name, testCases }: GroupedTestCaseItem) {
   };
 
   const passedTests = testCases.filter((testCase) => testCase.outcome === 'passed');
-  const failedTests = testCases.filter((testCase) => testCase.outcome === 'failed');
   const accuracy = passedTests.length / testCases.length;
 
   const expectedKeys = getFlattenedObjectKeys(testCases[0].agent_test_case.expected_output);

@@ -1,11 +1,11 @@
 'use client';
 
-import { ClaimSubstantiatorStateOutput } from '@/lib/generated-api';
+import { ClaimSubstantiatorStateSummary } from '@/lib/generated-api';
 import * as React from 'react';
 import { SummaryCards } from '../components/summary-cards';
 
 interface SummaryTabProps {
-  results: ClaimSubstantiatorStateOutput;
+  results: ClaimSubstantiatorStateSummary;
   totalChunks: number;
   chunksWithClaims: number;
   chunksWithCitations: number;
