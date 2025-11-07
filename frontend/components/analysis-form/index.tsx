@@ -32,6 +32,7 @@ export function AnalysisForm() {
       documentPublicationDate: '',
       runLiteratureReview: false,
       runSuggestCitations: false,
+      runReferenceValidation: false,
       webSearchConsent: false,
     },
     validators: {
@@ -52,10 +53,13 @@ export function AnalysisForm() {
               },
             };
           }
+        }
+        if (value.runLiteratureReview || value.reviewType === 'live-reports' || value.runReferenceValidation) {
           if (!value.webSearchConsent) {
             return {
               fields: {
-                webSearchConsent: 'Web search consent is required when using literature review or live reports',
+                webSearchConsent:
+                  'Web search consent is required when using literature review, live reports, or reference validation',
               },
             };
           }
@@ -86,6 +90,7 @@ export function AnalysisForm() {
           runLiveReports: value.reviewType === 'live-reports',
           runLiteratureReview: value.reviewType === 'peer-review' && value.runLiteratureReview,
           runSuggestCitations: value.reviewType === 'peer-review' && value.runSuggestCitations,
+          runReferenceValidation: value.reviewType === 'peer-review' && value.runReferenceValidation,
         },
       });
     },
@@ -110,6 +115,7 @@ export function AnalysisForm() {
             runLiteratureReview: data.config.runLiteratureReview,
             runSuggestCitations: data.config.runSuggestCitations,
             runLiveReports: data.config.runLiveReports,
+            runReferenceValidation: data.config.runReferenceValidation,
             domain: data.config.domain || undefined,
             targetAudience: data.config.targetAudience || undefined,
             documentPublicationDate: data.config.documentPublicationDate
@@ -266,6 +272,18 @@ export function AnalysisForm() {
                 />
                 {field.state.value === 'peer-review' && (
                   <>
+                    <form.Field name="runReferenceValidation">
+                      {(field) => (
+                        <CheckboxWithDescription
+                          id="use-reference-validation"
+                          checked={field.state.value}
+                          onCheckedChange={(checked) => field.handleChange(checked === true)}
+                          label="Reference validation (Optional)"
+                          description="Validates references by checking their online presence and verifying author, title, publisher, and year information using web search."
+                          disabled={analysisMutation.isPending}
+                        />
+                      )}
+                    </form.Field>
                     <form.Field name="runLiteratureReview">
                       {(field) => (
                         <CheckboxWithDescription
@@ -365,9 +383,15 @@ export function AnalysisForm() {
         </form.Field>
       </div>
 
-      <form.Subscribe selector={(state) => [state.values.runLiteratureReview, state.values.reviewType]}>
-        {([runLiteratureReview, reviewType]) =>
-          (runLiteratureReview || reviewType === 'live-reports') && (
+      <form.Subscribe
+        selector={(state) => [
+          state.values.runLiteratureReview,
+          state.values.reviewType,
+          state.values.runReferenceValidation,
+        ]}
+      >
+        {([runLiteratureReview, reviewType, runReferenceValidation]) =>
+          (runLiteratureReview || reviewType === 'live-reports' || runReferenceValidation) && (
             <form.Field name="webSearchConsent">
               {(field) => (
                 <div>
@@ -377,7 +401,7 @@ export function AnalysisForm() {
                       checked={field.state.value}
                       onCheckedChange={(checked) => field.handleChange(checked === true)}
                       label="I consent to perform web search using parts of the document"
-                      description={`Web search is required to perform "literature review" or "live reports". Parts of the document will be used to perform web search, so we don't recommend using confidential information. Disable "literature review" or "live reports" if you don't consent to perform web search.`}
+                      description={`Web search is required to perform "literature review", "live reports", or "reference validation". Parts of the document will be used to perform web search, so we don't recommend using confidential information. Disable "literature review", "live reports", or "reference validation" if you don't consent to perform web search.`}
                     />
                   </div>
                   {!field.state.meta.isValid && (

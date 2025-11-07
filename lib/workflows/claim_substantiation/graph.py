@@ -60,6 +60,7 @@ def build_claim_substantiator_graph(
     run_suggest_citations: bool = True,
     use_rag: bool = True,
     run_live_reports: bool = False,
+    run_reference_validation: bool = False,
 ) -> StateGraph:
     """
     Build a LangGraph workflow for claim substantiation analysis.
@@ -69,6 +70,7 @@ def build_claim_substantiator_graph(
         run_literature_review: Include literature review node
         run_suggest_citations: Include citation suggestion nodes
         use_rag: Use RAG-based claim verification
+        run_reference_validation: Include reference validation node
 
     Returns:
         Configured StateGraph for claim substantiation workflow
@@ -85,7 +87,8 @@ def build_claim_substantiator_graph(
     )
     graph.add_node("detect_citations", detect_citations)
     graph.add_node("extract_references", extract_references)
-    graph.add_node("validate_references", validate_references)
+    if run_reference_validation:
+        graph.add_node("validate_references", validate_references)
     graph.add_node("check_claim_needs_substantiation", check_claim_needs_substantiation)
     graph.add_node("categorize_claims", categorize_claims)
     graph.add_node("validate_inferences", validate_inferences)
@@ -121,8 +124,11 @@ def build_claim_substantiator_graph(
     graph.add_edge("convert_to_markdown", "prepare_documents")
     graph.add_edge("prepare_documents", "split_into_chunks")
     graph.add_edge("split_into_chunks", "extract_references")
-    graph.add_edge("extract_references", "validate_references")
-    graph.add_edge("validate_references", "detect_citations")
+    if run_reference_validation:
+        graph.add_edge("extract_references", "validate_references")
+        graph.add_edge("validate_references", "detect_citations")
+    else:
+        graph.add_edge("extract_references", "detect_citations")
     graph.add_edge("split_into_chunks", "extract_claims")
     # NOTE (2025-10-21): Currently going directly from extract_claims to check_claim_needs_substantiation
     # and then to verify claims;

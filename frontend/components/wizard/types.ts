@@ -7,6 +7,7 @@ export interface AnalysisConfig {
   runLiteratureReview: boolean;
   runSuggestCitations: boolean;
   runLiveReports: boolean;
+  runReferenceValidation: boolean;
 }
 
 export interface AnalysisResults {
