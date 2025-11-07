@@ -44,7 +44,7 @@ _claim_extractor_prompt_claimify = ChatPromptTemplate.from_template(
     """
 
 ### Agent Setup and Terms
-You are an assistant for a group of fact-checkers. You will be given a full document, a paragraph from the original document, and a chunk of text (typically a sentence or a few sentences) from that paragraph, and your task is to extract all the claimsfrom the chunk of text. 
+You are an assistant for a group of fact-checkers. You will be given a full document, a paragraph from the original document, and a chunk of text (typically a sentence or a few sentences) from that paragraph, and your task is to extract all the claims from the chunk of text. 
 
 Claim (definition): An assertion or proposition that is made within a chunk of text. Grammatically, a sentence that expresses a claim is a declarative sentence and thus contains a verb. 
 
