@@ -20,7 +20,7 @@ export function FileUpload({
   accept = '.pdf,.doc,.docx,.txt,.md',
   acceptLabel = 'PDF, DOC, DOCX, TXT, MD',
   multiple = true,
-  maxSize = 10,
+  maxSize = 80,
   onFilesChange,
   className,
   disabled = false,

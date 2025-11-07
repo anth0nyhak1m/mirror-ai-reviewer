@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ChunkReevaluationResponse, ClaimSubstantiatorStateSummary, DocumentIssue } from '@/lib/generated-api';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChunkSidebarContent } from '../components/chunk-sidebar-content';
 import { DocumentIssuesList } from '../components/document-issues-list';
 import { DocumentReconstructor } from '../components/document-reconstructor';
@@ -32,6 +32,10 @@ export function DocumentExplorerTab({ results, onChunkReevaluation, isProcessing
       sidebarRef.current.scrollTop = 0;
     }
   }, [selectedChunkIndex]);
+
+  const handleChunkSelect = useCallback((chunkIndex: number | null) => {
+    setSelectedChunkIndex((curr) => (curr === chunkIndex ? null : chunkIndex));
+  }, []);
 
   if (isProcessing && !hasChunks) {
     return (
@@ -68,7 +72,7 @@ export function DocumentExplorerTab({ results, onChunkReevaluation, isProcessing
           <DocumentReconstructor
             results={results}
             selectedChunkIndex={selectedChunkIndex}
-            onChunkSelect={setSelectedChunkIndex}
+            onChunkSelect={handleChunkSelect}
           />
         </div>
         <div ref={sidebarRef} className="col-span-5 bg-muted/50 p-4 rounded-lg text-sm overflow-y-auto">
