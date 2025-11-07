@@ -166,7 +166,7 @@ class RAGReferenceProvider:
                     collection_id=get_collection_id(
                         get_file_hash_from_path(file_doc.file_path)
                     ),
-                    top_k=20,
+                    top_k=RAG_TOP_K,
                 )
                 for file_doc in state.supporting_files
             ]

@@ -4,7 +4,10 @@ from lib.agents.formatting_utils import (
     format_audience_context,
     format_domain_context,
 )
-from lib.agents.inference_validator import inference_validator_agent
+from lib.agents.inference_validator import (
+    InferenceValidationResponseWithClaimIndex,
+    inference_validator_agent,
+)
 from lib.agents.models import ClaimCategory
 from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
@@ -87,11 +90,15 @@ async def _validate_chunk_inferences(
                 "audience_context": format_audience_context(
                     state.config.target_audience
                 ),
-                "claim_index": claim_index,
-                "chunk_index": chunk.chunk_index,
             }
         )
-        validation_results.append(result)
+        validation_results.append(
+            InferenceValidationResponseWithClaimIndex(
+                chunk_index=chunk.chunk_index,
+                claim_index=claim_index,
+                **result.model_dump(),
+            )
+        )
 
     logger.debug(
         "Validated %s inference claims for chunk %s",
