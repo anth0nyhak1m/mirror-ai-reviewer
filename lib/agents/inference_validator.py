@@ -131,11 +131,11 @@ The Toulmin method is a style of argumentation that breaks arguments down into s
 
 For example, if you argue that there are dogs nearby, because you hear them barking, the claim is "there are dogs nearby", the grounds are "you hear barking and howling", and the warrant is "dogs are animals that bark and howl".
 
-In this example, in order to assert the claim that a dog is nearby, we provide evidence and specific facts—or the grounds—by acknowledging that we hear barking and howling. Since we know that dogs bark and howl (i.e., since we have a warrant) we can assume that a dog is nearby. 
+In this example, in order to assert the claim that a dog is nearby, we provide evidence and specific facts—or the grounds—by acknowledging that we hear barking and howling. Since we know that dogs bark and howl (i.e., since we have a warrant) we can assume that a dog is nearby.
 
 Now, let's try a more academic approach. Let's say that you are writing a paper on how more research needs to be done on the way that computer-mediated communication influences online and offline relationships.
 
-Let the claim be "Additional research needs on computer-mediated communication needs to be conducted to better understand how online interactions affect relationships". The grounds are "In their paper, Cummings et al. discuss how email communications are an inferior means of maintaining personal relationships. However, their study does not account for technological, demographic, or modality limitations." The warrant is "When a paper lacks a certain perspective, more research would be beneficial to prove its claims." 
+Let the claim be "Additional research needs on computer-mediated communication needs to be conducted to better understand how online interactions affect relationships". The grounds are "In their paper, Cummings et al. discuss how email communications are an inferior means of maintaining personal relationships. However, their study does not account for technological, demographic, or modality limitations." The warrant is "When a paper lacks a certain perspective, more research would be beneficial to prove its claims."
 
 In this case, to assert the claim that additional research needs to be made on how online communication affects relationships, the author shows how the original article needs to account for technological, demographic, and modality limitations in the study.  Since we know that when a study lacks a perspective, it would be beneficial to do more research (i.e., we have a warrant), it would be safe to assume that more research should be conducted (i.e. the claim).
 
@@ -143,11 +143,11 @@ The other three elements—backing, qualifier, and rebuttal—are not fundamenta
 
 - Backing refers to any additional support of the warrant. In many cases, the warrant is implied, and therefore the backing provides support for the warrant by giving a specific example that justifies the warrant.
 
-- The qualifier shows that a claim may not be true in all circumstances. Words like “presumably,” “some,” and “many” help your audience understand that you know there are instances where your claim may not be correct. 
+- The qualifier shows that a claim may not be true in all circumstances. Words like “presumably,” “some,” and “many” help your audience understand that you know there are instances where your claim may not be correct.
 
-- Rebuttal is an acknowledgement of another valid view of the situation. 
+- Rebuttal is an acknowledgement of another valid view of the situation.
 
-Including a qualifier or a rebuttal in an argument helps build your ethos, or credibility. When you acknowledge that your view isn’t always true or when you provide multiple views of a situation, you build an image of a careful, unbiased thinker, rather than of someone blindly pushing for a single interpretation of the situation. 
+Including a qualifier or a rebuttal in an argument helps build your ethos, or credibility. When you acknowledge that your view isn’t always true or when you provide multiple views of a situation, you build an image of a careful, unbiased thinker, rather than of someone blindly pushing for a single interpretation of the situation.
 
 In the dog example, a backing could be that "You know that your neighbor Tom has two large German Shepherds," and a qualifier could be that "Tom's dogs are likely at home," a rebuttal could be that "There is a child at home that likes watching shows about dogs."
 
@@ -164,8 +164,8 @@ In the academic paper example, a backing could be "A thorough review of the lite
   - "warrant_expression": the expression of the warrant as "stated", "implied", or "none".
   - "backing": list any additional support for the warrant (e.g., principles, cited studies, theoretical reasons) if present. Helps determine if the claim has been overstated or understated.
   - "qualifiers": list hedging or scope-limiting language contained within the claim.
-  - "rebuttals": list acknowledged exceptions or counter-arguments only if they are present in the chunk. The lack of rebuttals does not reduce the validity of the claim but the existence of rebutalls can bolster a claim by acknowledging that it is not an absolute statement. 
-- In only TWO sentences, explain why you think the inference is valid or not. 
+  - "rebuttals": list acknowledged exceptions or counter-arguments only if they are present in the chunk. The lack of rebuttals does not reduce the validity of the claim but the existence of rebutalls can bolster a claim by acknowledging that it is not an absolute statement.
+- In only TWO sentences, explain why you think the inference is valid or not.
 - In only TWO sentences, suggest an action to take if the inference is not valid. If the inference is valid, return 'No changes needed'.
 
 ## Domain context of the document (i.e., the subject area the document falls in)
@@ -208,13 +208,13 @@ class InferenceValidatorAgent(AgentProtocol):
             gpt_5_model.model_name,
             temperature=0.2,
             timeout=DEFAULT_LLM_TIMEOUT,
-        ).with_structured_output(InferenceValidationResponseWithClaimIndex)
+        ).with_structured_output(InferenceValidationResponse)
 
     async def ainvoke(
         self,
         prompt_kwargs: dict,
         config: RunnableConfig = None,
-    ) -> InferenceValidationResponseWithClaimIndex:
+    ) -> InferenceValidationResponse:
         messages = _inference_validation_prompt.format_messages(**prompt_kwargs)
         return await self.llm.ainvoke(messages, config=config)
 
@@ -238,7 +238,7 @@ if __name__ == "__main__":
         # Sample test data; now includes explicit claim_index and chunk_index for withClaimIndex structure
         test_data = {
             "full_document": """
-            Renewable energy capacity has grown significantly in recent years. 
+            Renewable energy capacity has grown significantly in recent years.
             Solar and wind power installations have increased by 40% since 2020.
             This growth is driven by declining costs and supportive government policies.
             However, challenges remain in grid integration and energy storage.
