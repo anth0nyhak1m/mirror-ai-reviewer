@@ -66,6 +66,7 @@ export * from './StartAnalysisResponse';
 export * from './SubstantiationWorkflowConfig';
 export * from './ToulminClaim';
 export * from './ToulminClaimResponse';
+export * from './UpdateWorkflowRunRequest';
 export * from './ValidationError';
 export * from './ValidationErrorLocInner';
 export * from './WorkflowError';
