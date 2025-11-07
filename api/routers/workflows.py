@@ -6,11 +6,13 @@ from fastapi import APIRouter
 
 from lib.models.workflow_run import WorkflowRun
 from lib.services.workflow_runs import (
+    UpdateWorkflowRunRequest,
     WorkflowRunDetailed,
     delete_workflow_run,
     get_chunk_details,
     get_workflow_run_detailed,
     get_workflow_runs,
+    update_workflow_run,
 )
 from lib.workflows.claim_substantiation.state import DocumentChunk
 
@@ -27,6 +29,14 @@ async def list_workflow_runs():
 async def get_workflow_run(workflow_run_id: str):
     """Get detailed workflow run information including state"""
     return await get_workflow_run_detailed(workflow_run_id)
+
+
+@router.patch("/api/workflow-run/{workflow_run_id}", response_model=WorkflowRun)
+async def update_workflow_run_endpoint(
+    workflow_run_id: str, request: UpdateWorkflowRunRequest
+):
+    """Update a workflow run with the provided fields"""
+    return await update_workflow_run(workflow_run_id, request)
 
 
 @router.get(

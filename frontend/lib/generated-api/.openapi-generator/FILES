@@ -74,6 +74,7 @@ models/StartAnalysisResponse.ts
 models/SubstantiationWorkflowConfig.ts
 models/ToulminClaim.ts
 models/ToulminClaimResponse.ts
+models/UpdateWorkflowRunRequest.ts
 models/ValidationError.ts
 models/ValidationErrorLocInner.ts
 models/WorkflowError.ts
