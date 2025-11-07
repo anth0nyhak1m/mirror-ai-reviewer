@@ -10,7 +10,7 @@ from lib.models.agent import DEFAULT_LLM_TIMEOUT, AgentProtocol
 from pydantic import BaseModel, Field
 
 
-class UpdateType(BaseModel):
+class UpdateType(str, Enum):
     """Defines the classification and metadata for a report update."""
 
     NO_UPDATE_NEEDED = "no_update_needed"
