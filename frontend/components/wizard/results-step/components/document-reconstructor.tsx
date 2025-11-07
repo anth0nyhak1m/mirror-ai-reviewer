@@ -171,7 +171,7 @@ export function DocumentReconstructorChunkGroup({
     }
 
     const handleClick = (event: Event) => {
-      const target = event.target as HTMLElement;
+      const target = event.currentTarget as HTMLElement;
       const chunkIndex = target.getAttribute('data-chunk-index');
       if (chunkIndex && onChunkSelect) {
         onChunkSelect(parseInt(chunkIndex));
