@@ -13,6 +13,7 @@ import {
 } from '@/lib/generated-api';
 import { downloadBlobResponse, generateDefaultTestName } from '@/lib/utils';
 import { analysisApi, evaluationApi, healthApi, apiUrl } from './api';
+import { getSession } from 'next-auth/react';
 
 interface AnalysisRequest {
   mainDocument: File;
@@ -46,7 +47,7 @@ class AnalysisService {
     request: AnalysisRequest,
     onProgress?: (progress: number) => void,
   ): Promise<StartAnalysisResponse> {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       try {
         const config = request.config || {};
 
@@ -73,6 +74,10 @@ class AnalysisService {
         if (config.documentPublicationDate)
           formData.append('document_publication_date', config.documentPublicationDate.toISOString().split('T')[0]);
         if (config.sessionId) formData.append('session_id', config.sessionId);
+
+        // Get session for authentication
+        const session = await getSession();
+        const authHeader = session?.accessToken ? `Bearer ${session.accessToken}` : undefined;
 
         // Use XMLHttpRequest for upload progress tracking
         const xhr = new XMLHttpRequest();
@@ -107,6 +112,12 @@ class AnalysisService {
         });
 
         xhr.open('POST', `${apiUrl}/api/start-analysis`);
+
+        // Set authorization header if available
+        if (authHeader) {
+          xhr.setRequestHeader('Authorization', authHeader);
+        }
+
         xhr.send(formData);
       } catch (error) {
         console.error('Error starting analysis:', error);
