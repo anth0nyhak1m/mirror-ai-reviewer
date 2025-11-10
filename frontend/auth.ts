@@ -4,6 +4,9 @@ import MicrosoftEntraID from 'next-auth/providers/microsoft-entra-id';
 import { JWTPayload, SignJWT } from 'jose';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  theme: {
+    colorScheme: 'light',
+  },
   providers: [
     ...(process.env.AUTH_GOOGLE_ID
       ? [
