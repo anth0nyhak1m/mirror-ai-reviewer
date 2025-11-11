@@ -62,6 +62,12 @@ class AgentTestCase(BaseModel):
     llm_fields: set | dict = Field(default_factory=set)
     ignore_fields: set | dict = Field(default_factory=set)
 
+    # Special instructions for LLM-as-a-judge evaluation
+    llm_instructions: Optional[str] = Field(
+        default=None,
+        description="Special instructions to include in the LLM-as-a-judge prompt for semantic comparison",
+    )
+
     # Evaluator model (provider:model) for LLM comparisons. Keep temperature 0 for determinism.
     evaluator_model: str = Field(default="openai:gpt-5-mini")
 
@@ -146,9 +152,8 @@ class AgentTestCase(BaseModel):
         )
         grader = grader.with_structured_output(EvaluationResult)
 
-        prompt = ChatPromptTemplate.from_template(
-            """
-You are a strict evaluator for agent outputs.
+        # Build base instructions
+        base_instructions = """You are a strict evaluator for agent outputs.
 
 Instructions:
 - Compare the EXPECTED and RECEIVED JSON for the selected fields.
@@ -156,7 +161,16 @@ Instructions:
 - For textual fields or rationales, accept minor wording differences if the meaning is equivalent.
 - If counts differ in list-like fields or any expected item is missing semantically, return passed=False.
 
-Return a boolean 'passed' (True if the expected and received results match, False otherwise) and a short 'rationale'.
+Return a boolean 'passed' (True if the expected and received results match, False otherwise) and a short 'rationale'."""
+
+        # Append special instructions if provided
+        if self.llm_instructions:
+            instructions = f"{base_instructions}\n\nAdditional Instructions:\n{self.llm_instructions}"
+        else:
+            instructions = base_instructions
+
+        prompt = ChatPromptTemplate.from_template(
+            """{instructions}
 
 EXPECTED JSON (selected fields):
 ```json
@@ -171,6 +185,7 @@ RECEIVED JSON (selected fields):
         )
 
         messages = prompt.format_messages(
+            instructions=instructions,
             expected_llm_json=expected_llm_json,
             result_llm_json=result_llm_json,
         )
