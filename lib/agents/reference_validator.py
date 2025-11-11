@@ -71,7 +71,7 @@ by ensuring there is online presence from a legitimate source from each one.
 - Title: [analysis of the title in the reference]
 - Publisher: [analysis of the publisher in the reference]
 - Year: [analysis of the year in the reference]
-- Found URL: [URL of the reference if found, otherwise empty]
+- Found URLs: [list of most relevant URLs of the reference, if found, otherwise empty; separated by commas; maximum of 2 URLs]
 ```
 
 Example:
@@ -83,7 +83,7 @@ Example:
 - Title: The title of the reference is incorrect, it should be "Unlocking compositional generalization in pretrained models using intermediate representations"
 - Publisher: The publisher of the reference matches that online.
 - Year: The year of the reference is correct and is a valid year.
-- Found URL: https://arxiv.org/pdf/2511.07221
+- Found URLs: https://arxiv.org/pdf/2511.07221, https://www.rand.org/pubs/research_reports/RR890.html
 ```
 
 # Guidelines for checking the reference fields
