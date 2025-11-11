@@ -1,7 +1,7 @@
 from datetime import date
 from enum import StrEnum
 from operator import add
-from typing import Annotated, Dict, List, Optional
+from typing import Annotated, Dict, List, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -92,7 +92,7 @@ class DocumentChunkSummary(ChunkWithIndex):
 class DocumentChunk(ChunkWithIndex):
     """Independent chunk response object with all processing results"""
 
-    claims: Optional[ClaimResponse | ToulminClaimResponse] = None
+    claims: Optional[Union[ClaimResponse, ToulminClaimResponse]] = None
     citations: Optional[CitationResponse] = None
     claim_categories: List[ClaimCategorizationResponseWithClaimIndex] = []
     claim_common_knowledge_results: List[ClaimCommonKnowledgeResultWithClaimIndex] = []

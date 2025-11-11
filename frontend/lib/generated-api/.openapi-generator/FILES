@@ -68,12 +68,16 @@ models/Reference.ts
 models/ReferenceAlignmentLevel.ts
 models/ReferenceDirection.ts
 models/ReferenceType.ts
+models/ReportMetadata.ts
+models/ReportOutputInput.ts
+models/ReportOutputOutput.ts
 models/RetrievedPassageInfo.ts
 models/SeverityEnum.ts
 models/StartAnalysisResponse.ts
 models/SubstantiationWorkflowConfig.ts
 models/ToulminClaim.ts
 models/ToulminClaimResponse.ts
+models/UpdateType.ts
 models/UpdateWorkflowRunRequest.ts
 models/ValidationError.ts
 models/ValidationErrorLocInner.ts
