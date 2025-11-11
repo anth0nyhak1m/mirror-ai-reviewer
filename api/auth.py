@@ -2,7 +2,7 @@ import logging
 
 import jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from lib.config.env import config
 from lib.services.users import get_or_create_user_by_email
@@ -13,12 +13,12 @@ logger = logging.getLogger(__name__)
 SECRET_KEY = config.AUTH_SECRET
 ALGORITHM = "HS512"
 
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl="token"  # tokenUrl is for docs, not actual endpoint
-)
+oauth2_scheme = HTTPBearer()
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(oauth2_scheme),
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -26,7 +26,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     )
     try:
         payload = jwt.decode(
-            token, SECRET_KEY, algorithms=[ALGORITHM], audience="ai-reviewer-api"
+            credentials.credentials,
+            SECRET_KEY,
+            algorithms=[ALGORITHM],
+            audience="ai-reviewer-api",
         )
         email: str = payload.get("email")
         name: str = payload.get("name")
