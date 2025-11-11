@@ -13,6 +13,13 @@
  */
 
 import { mapValues } from '../runtime';
+import type { ReportOutputOutput } from './ReportOutputOutput';
+import {
+  ReportOutputOutputFromJSON,
+  ReportOutputOutputFromJSONTyped,
+  ReportOutputOutputToJSON,
+  ReportOutputOutputToJSONTyped,
+} from './ReportOutputOutput';
 import type { DocumentChunkOutput } from './DocumentChunkOutput';
 import {
   DocumentChunkOutputFromJSON,
@@ -176,6 +183,12 @@ export interface ClaimSubstantiatorStateOutput {
    */
   addendum?: AddendumOutput | null;
   /**
+   *
+   * @type {ReportOutputOutput}
+   * @memberof ClaimSubstantiatorStateOutput
+   */
+  addendumReport?: ReportOutputOutput | null;
+  /**
    * Ranked list of document issues with severity levels
    * @type {Array<DocumentIssue>}
    * @memberof ClaimSubstantiatorStateOutput
@@ -230,6 +243,7 @@ export function ClaimSubstantiatorStateOutputFromJSONTyped(
     literatureReview:
       json['literature_review'] == null ? undefined : LiteratureReviewResponseOutputFromJSON(json['literature_review']),
     addendum: json['addendum'] == null ? undefined : AddendumOutputFromJSON(json['addendum']),
+    addendumReport: json['addendum_report'] == null ? undefined : ReportOutputOutputFromJSON(json['addendum_report']),
     rankedIssues:
       json['ranked_issues'] == null ? undefined : (json['ranked_issues'] as Array<any>).map(DocumentIssueFromJSON),
   };
@@ -272,6 +286,7 @@ export function ClaimSubstantiatorStateOutputToJSONTyped(
         : (value['liveReportsAnalysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexOutputToJSON),
     literature_review: LiteratureReviewResponseOutputToJSON(value['literatureReview']),
     addendum: AddendumOutputToJSON(value['addendum']),
+    addendum_report: ReportOutputOutputToJSON(value['addendumReport']),
     ranked_issues:
       value['rankedIssues'] == null ? undefined : (value['rankedIssues'] as Array<any>).map(DocumentIssueToJSON),
   };
