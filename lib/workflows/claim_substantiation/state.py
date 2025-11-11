@@ -28,7 +28,6 @@ from lib.services.file import FileDocument
 
 # Workflow models
 from lib.workflows.models import WorkflowError
-from lib.agents.addendum_generator import Addendum
 from lib.agents.addendum_report_generator import ReportOutput
 
 
@@ -253,9 +252,6 @@ class ClaimSubstantiatorState(BaseModel):
         default_factory=list, description="Live reports analysis results by chunk index"
     )
     literature_review: Optional[LiteratureReviewResponse] = None
-    addendum: Optional[Addendum] = Field(
-        default=None, description="Structured addendum generated from live reports"
-    )
     addendum_report: Optional[ReportOutput] = Field(
         default=None, description="Report output from the addendum report generator"
     )
@@ -295,7 +291,6 @@ class ClaimSubstantiatorStateSummary(BaseModel):
     supporting_documents_summaries: Optional[Dict[int, DocumentSummary]] = None
     live_reports_analysis: List[EvidenceWeighterResponseWithClaimIndex] = []
     literature_review: Optional[LiteratureReviewResponse] = None
-    addendum: Optional[Addendum] = None
     addendum_report: Optional[ReportOutput] = None
     ranked_issues: List[DocumentIssue] = []
 
