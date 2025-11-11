@@ -14,12 +14,12 @@ export const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 // Middleware to add Bearer token to all requests
 const authMiddleware: Middleware = {
   pre: async (context) => {
-    const session = await getSession();
+    const authHeader = await getAuthHeader();
 
-    if (session?.accessToken) {
+    if (authHeader) {
       context.init.headers = {
         ...context.init.headers,
-        Authorization: `Bearer ${session.accessToken}`,
+        Authorization: authHeader,
       };
     }
     return context;
@@ -36,3 +36,8 @@ export const evaluationApi = new EvaluationApi(config);
 export const feedbackApi = new FeedbackApi(config);
 export const healthApi = new HealthApi(config);
 export const workflowsApi = new WorkflowsApi(config);
+
+export async function getAuthHeader(): Promise<string | undefined> {
+  const session = await getSession();
+  return session?.accessToken ? `Bearer ${session.accessToken}` : undefined;
+}
