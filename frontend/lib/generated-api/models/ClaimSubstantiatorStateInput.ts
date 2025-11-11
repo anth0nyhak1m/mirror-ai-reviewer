@@ -83,13 +83,6 @@ import {
   DocumentSummaryToJSON,
   DocumentSummaryToJSONTyped,
 } from './DocumentSummary';
-import type { AddendumInput } from './AddendumInput';
-import {
-  AddendumInputFromJSON,
-  AddendumInputFromJSONTyped,
-  AddendumInputToJSON,
-  AddendumInputToJSONTyped,
-} from './AddendumInput';
 import type { EvidenceWeighterResponseWithClaimIndexInput } from './EvidenceWeighterResponseWithClaimIndexInput';
 import {
   EvidenceWeighterResponseWithClaimIndexInputFromJSON,
@@ -178,12 +171,6 @@ export interface ClaimSubstantiatorStateInput {
   literatureReview?: LiteratureReviewResponseInput | null;
   /**
    *
-   * @type {AddendumInput}
-   * @memberof ClaimSubstantiatorStateInput
-   */
-  addendum?: AddendumInput | null;
-  /**
-   *
    * @type {ReportOutputInput}
    * @memberof ClaimSubstantiatorStateInput
    */
@@ -242,7 +229,6 @@ export function ClaimSubstantiatorStateInputFromJSONTyped(
         : (json['live_reports_analysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexInputFromJSON),
     literatureReview:
       json['literature_review'] == null ? undefined : LiteratureReviewResponseInputFromJSON(json['literature_review']),
-    addendum: json['addendum'] == null ? undefined : AddendumInputFromJSON(json['addendum']),
     addendumReport: json['addendum_report'] == null ? undefined : ReportOutputInputFromJSON(json['addendum_report']),
     rankedIssues:
       json['ranked_issues'] == null ? undefined : (json['ranked_issues'] as Array<any>).map(DocumentIssueFromJSON),
@@ -285,7 +271,6 @@ export function ClaimSubstantiatorStateInputToJSONTyped(
         ? undefined
         : (value['liveReportsAnalysis'] as Array<any>).map(EvidenceWeighterResponseWithClaimIndexInputToJSON),
     literature_review: LiteratureReviewResponseInputToJSON(value['literatureReview']),
-    addendum: AddendumInputToJSON(value['addendum']),
     addendum_report: ReportOutputInputToJSON(value['addendumReport']),
     ranked_issues:
       value['rankedIssues'] == null ? undefined : (value['rankedIssues'] as Array<any>).map(DocumentIssueToJSON),
