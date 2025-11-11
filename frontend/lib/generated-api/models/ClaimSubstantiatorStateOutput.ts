@@ -83,13 +83,13 @@ import {
   DocumentSummaryToJSON,
   DocumentSummaryToJSONTyped,
 } from './DocumentSummary';
-import type { BibliographyItemValidationOutput } from './BibliographyItemValidationOutput';
+import type { BibliographyItemValidation } from './BibliographyItemValidation';
 import {
-  BibliographyItemValidationOutputFromJSON,
-  BibliographyItemValidationOutputFromJSONTyped,
-  BibliographyItemValidationOutputToJSON,
-  BibliographyItemValidationOutputToJSONTyped,
-} from './BibliographyItemValidationOutput';
+  BibliographyItemValidationFromJSON,
+  BibliographyItemValidationFromJSONTyped,
+  BibliographyItemValidationToJSON,
+  BibliographyItemValidationToJSONTyped,
+} from './BibliographyItemValidation';
 
 /**
  *
@@ -129,10 +129,10 @@ export interface ClaimSubstantiatorStateOutput {
   references?: Array<BibliographyItem>;
   /**
    *
-   * @type {Array<BibliographyItemValidationOutput>}
+   * @type {Array<BibliographyItemValidation>}
    * @memberof ClaimSubstantiatorStateOutput
    */
-  referencesValidated?: Array<BibliographyItemValidationOutput>;
+  referencesValidated?: Array<BibliographyItemValidation>;
   /**
    *
    * @type {Array<DocumentChunkOutput>}
@@ -214,7 +214,7 @@ export function ClaimSubstantiatorStateOutputFromJSONTyped(
     referencesValidated:
       json['references_validated'] == null
         ? undefined
-        : (json['references_validated'] as Array<any>).map(BibliographyItemValidationOutputFromJSON),
+        : (json['references_validated'] as Array<any>).map(BibliographyItemValidationFromJSON),
     chunks: json['chunks'] == null ? undefined : (json['chunks'] as Array<any>).map(DocumentChunkOutputFromJSON),
     errors: json['errors'] == null ? undefined : (json['errors'] as Array<any>).map(WorkflowErrorFromJSON),
     mainDocumentSummary:
@@ -258,7 +258,7 @@ export function ClaimSubstantiatorStateOutputToJSONTyped(
     references_validated:
       value['referencesValidated'] == null
         ? undefined
-        : (value['referencesValidated'] as Array<any>).map(BibliographyItemValidationOutputToJSON),
+        : (value['referencesValidated'] as Array<any>).map(BibliographyItemValidationToJSON),
     chunks: value['chunks'] == null ? undefined : (value['chunks'] as Array<any>).map(DocumentChunkOutputToJSON),
     errors: value['errors'] == null ? undefined : (value['errors'] as Array<any>).map(WorkflowErrorToJSON),
     main_document_summary: DocumentSummaryToJSON(value['mainDocumentSummary']),

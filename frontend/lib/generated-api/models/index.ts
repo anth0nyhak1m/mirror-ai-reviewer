@@ -1,9 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
-export * from './BibliographyFieldValidation';
 export * from './BibliographyItem';
-export * from './BibliographyItemValidationInput';
-export * from './BibliographyItemValidationOutput';
+export * from './BibliographyItemValidation';
 export * from './ChunkEvalPackageRequest';
 export * from './ChunkReevaluationRequest';
 export * from './ChunkReevaluationResponse';
@@ -40,8 +38,6 @@ export * from './EvidenceWeighterResponseWithClaimIndexOutput';
 export * from './FeedbackRequest';
 export * from './FeedbackResponse';
 export * from './FeedbackType';
-export * from './FieldCategory';
-export * from './FieldProblemType';
 export * from './FileDocument';
 export * from './HTTPValidationError';
 export * from './InferenceValidationResponseWithClaimIndex';
