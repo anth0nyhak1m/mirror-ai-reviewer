@@ -76,6 +76,11 @@ export class AnalysisApi extends runtime.BaseAPI {
 
     headerParameters['Content-Type'] = 'application/json';
 
+    if (this.configuration && this.configuration.accessToken) {
+      // oauth required
+      headerParameters['Authorization'] = await this.configuration.accessToken('OAuth2PasswordBearer', []);
+    }
+
     let urlPath = `/api/reevaluate-chunk`;
 
     const response = await this.request(
@@ -122,6 +127,11 @@ export class AnalysisApi extends runtime.BaseAPI {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    if (this.configuration && this.configuration.accessToken) {
+      // oauth required
+      headerParameters['Authorization'] = await this.configuration.accessToken('OAuth2PasswordBearer', []);
+    }
 
     const consumes: runtime.Consume[] = [{ contentType: 'multipart/form-data' }];
     // @ts-ignore: canConsumeForm may be unused

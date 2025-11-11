@@ -74,6 +74,11 @@ export class WorkflowsApi extends runtime.BaseAPI {
 
     const headerParameters: runtime.HTTPHeaders = {};
 
+    if (this.configuration && this.configuration.accessToken) {
+      // oauth required
+      headerParameters['Authorization'] = await this.configuration.accessToken('OAuth2PasswordBearer', []);
+    }
+
     let urlPath = `/api/workflow-run/{workflow_run_id}`;
     urlPath = urlPath.replace(`{${'workflow_run_id'}}`, encodeURIComponent(String(requestParameters['workflowRunId'])));
 
@@ -186,6 +191,11 @@ export class WorkflowsApi extends runtime.BaseAPI {
 
     const headerParameters: runtime.HTTPHeaders = {};
 
+    if (this.configuration && this.configuration.accessToken) {
+      // oauth required
+      headerParameters['Authorization'] = await this.configuration.accessToken('OAuth2PasswordBearer', []);
+    }
+
     let urlPath = `/api/workflow-run/{workflow_run_id}`;
     urlPath = urlPath.replace(`{${'workflow_run_id'}}`, encodeURIComponent(String(requestParameters['workflowRunId'])));
 
@@ -224,6 +234,11 @@ export class WorkflowsApi extends runtime.BaseAPI {
     const queryParameters: any = {};
 
     const headerParameters: runtime.HTTPHeaders = {};
+
+    if (this.configuration && this.configuration.accessToken) {
+      // oauth required
+      headerParameters['Authorization'] = await this.configuration.accessToken('OAuth2PasswordBearer', []);
+    }
 
     let urlPath = `/api/workflow-runs`;
 
@@ -278,6 +293,11 @@ export class WorkflowsApi extends runtime.BaseAPI {
     const headerParameters: runtime.HTTPHeaders = {};
 
     headerParameters['Content-Type'] = 'application/json';
+
+    if (this.configuration && this.configuration.accessToken) {
+      // oauth required
+      headerParameters['Authorization'] = await this.configuration.accessToken('OAuth2PasswordBearer', []);
+    }
 
     let urlPath = `/api/workflow-run/{workflow_run_id}`;
     urlPath = urlPath.replace(`{${'workflow_run_id'}}`, encodeURIComponent(String(requestParameters['workflowRunId'])));
