@@ -6,12 +6,6 @@ apis/HealthApi.ts
 apis/WorkflowsApi.ts
 apis/index.ts
 index.ts
-models/AddendumInput.ts
-models/AddendumItem.ts
-models/AddendumOutput.ts
-models/AddendumSectionsInput.ts
-models/AddendumSectionsOutput.ts
-models/AddendumSeverity.ts
 models/BibliographyFieldValidation.ts
 models/BibliographyItem.ts
 models/BibliographyItemValidationInput.ts

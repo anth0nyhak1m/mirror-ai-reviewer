@@ -1,11 +1,5 @@
 /* tslint:disable */
 /* eslint-disable */
-export * from './AddendumInput';
-export * from './AddendumItem';
-export * from './AddendumOutput';
-export * from './AddendumSectionsInput';
-export * from './AddendumSectionsOutput';
-export * from './AddendumSeverity';
 export * from './BibliographyFieldValidation';
 export * from './BibliographyItem';
 export * from './BibliographyItemValidationInput';
