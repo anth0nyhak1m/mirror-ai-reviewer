@@ -1,4 +1,4 @@
-name: Mirror ai-reviewer (all refs, PoC)
+name: Sync ai-reviewer main branch
 on:
   schedule:
     - cron: "0 * * * *"
@@ -8,42 +8,30 @@ permissions:
   contents: write
 
 jobs:
-  mirror:
+  sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout workflow branch
+      - name: Checkout this repo
         uses: actions/checkout@v4
         with:
-          ref: workflows  # Your special branch with just workflows
-          path: workflows-backup
-
-      - name: Clone external repo as a mirror
+          fetch-depth: 0
+          
+      - name: Add external repo and fetch
         run: |
-          set -e
-          EXTERNAL_REPO_URL="https://github.com/agencyenterprise/ai-reviewer.git"
-          rm -rf repo-mirror
-          git clone --mirror "$EXTERNAL_REPO_URL" repo-mirror
-
-      - name: Remove workflow files from ALL branches and tags
+          git remote add external https://github.com/agencyenterprise/ai-reviewer.git
+          git fetch external main
+          
+      - name: Merge external main into local main
         run: |
-          set -e
-          cd repo-mirror
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
-          pip install git-filter-repo
-          git filter-repo --path .github/workflows --invert-paths --force
-
-      - name: Push mirror
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INTERNAL_REPO: ${{ github.repository }}
+          git checkout main
+          git merge external/main --allow-unrelated-histories -X theirs
+          
+          # Remove workflows from external repo if they exist
+          if [ -d ".github/workflows" ]; then
+            git ls-files .github/workflows/ | grep -v "$(basename ${{ github.workflow_ref }})" | xargs git rm -f || true
+            git commit -m "Remove external workflows" || true
+          fi
+          
+      - name: Push changes
         run: |
-          set -e
-          cd repo-mirror
-          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${INTERNAL_REPO}.git"
-          git push --mirror --force
-
-      - name: Restore workflow branch
-        run: |
-          cd workflows-backup
-          git push origin workflows --force
+          git push origin main
