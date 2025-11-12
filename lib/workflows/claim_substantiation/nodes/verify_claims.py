@@ -7,7 +7,6 @@ from lib.agents.claim_verifier import (
 )
 from lib.agents.formatting_utils import (
     format_audience_context,
-    format_cited_references,
     format_domain_context,
 )
 from lib.agents.formatting_utils import format_audience_context, format_domain_context
@@ -15,7 +14,6 @@ from lib.workflows.chunk_iterator import iterate_chunks
 from lib.workflows.claim_substantiation.reference_providers import (
     CitationBasedReferenceProvider,
     RAGReferenceProvider,
-    ReferenceContext,
     ReferenceProvider,
 )
 from lib.workflows.claim_substantiation.state import (
@@ -34,26 +32,22 @@ _CITATION_PROVIDER = CitationBasedReferenceProvider()
 _RAG_PROVIDER = RAGReferenceProvider()
 
 
-def _needs_substantiation(chunk: DocumentChunk, claim_index: int) -> bool:
-    """Check if a claim needs substantiation.
+def _needs_external_verification(chunk: DocumentChunk, claim_index: int) -> bool:
+    """Check if a claim needs external verification.
 
-    A claim needs substantiation if:
-    1. It has citations in the chunk that need to be verified (regardless of common knowledge status)
-    2. OR it's not common knowledge and needs supporting evidence
+    A claim needs external verification if:
+    1. It has citations in the chunk that need to be verified
+    2. It has a category that requires external verification
     """
 
     if chunk.citations and chunk.citations.citations:
         return True
 
-    common_knowledge_result = next(
-        (
-            r
-            for r in chunk.claim_common_knowledge_results
-            if r.claim_index == claim_index
-        ),
+    category = next(
+        (c for c in chunk.claim_categories if c.claim_index == claim_index),
         None,
     )
-    return not common_knowledge_result or common_knowledge_result.needs_substantiation
+    return category and category.needs_external_verification
 
 
 async def _verify_chunk_claims_with_provider(
@@ -76,7 +70,10 @@ async def _verify_chunk_claims_with_provider(
     substantiations = []
 
     for claim_index, claim in enumerate(chunk.claims.claims):
-        if not _needs_substantiation(chunk, claim_index):
+        if not _needs_external_verification(chunk, claim_index):
+            logger.debug(
+                f"verify_chunk_claims_with_provider: Chunk {chunk.chunk_index} claim {claim_index} does not need external verification, skipping verification"
+            )
             continue
 
         ref_context = await reference_provider.get_references_for_claim(
