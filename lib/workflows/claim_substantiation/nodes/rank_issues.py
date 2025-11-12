@@ -35,7 +35,10 @@ def rank_issues(state: ClaimSubstantiatorState) -> ClaimSubstantiatorState:
                 title="Invalid reference",
                 description=f'Possible invalid reference: "{validation.original_reference.text}"',
                 severity=SeverityEnum.HIGH,
-                additional_context=validation.analysis,
+                additional_context=f"Suggested action: {validation.suggested_action}",
+                chunk_index=_find_chunk_index_by_text(
+                    state, validation.original_reference.text
+                ),
             )
             issues.append(issue)
 

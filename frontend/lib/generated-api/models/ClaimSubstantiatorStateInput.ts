@@ -69,6 +69,13 @@ import {
   SubstantiationWorkflowConfigToJSON,
   SubstantiationWorkflowConfigToJSONTyped,
 } from './SubstantiationWorkflowConfig';
+import type { BibliographyItemValidationInput } from './BibliographyItemValidationInput';
+import {
+  BibliographyItemValidationInputFromJSON,
+  BibliographyItemValidationInputFromJSONTyped,
+  BibliographyItemValidationInputToJSON,
+  BibliographyItemValidationInputToJSONTyped,
+} from './BibliographyItemValidationInput';
 import type { DocumentSummary } from './DocumentSummary';
 import {
   DocumentSummaryFromJSON,
@@ -76,13 +83,6 @@ import {
   DocumentSummaryToJSON,
   DocumentSummaryToJSONTyped,
 } from './DocumentSummary';
-import type { BibliographyItemValidation } from './BibliographyItemValidation';
-import {
-  BibliographyItemValidationFromJSON,
-  BibliographyItemValidationFromJSONTyped,
-  BibliographyItemValidationToJSON,
-  BibliographyItemValidationToJSONTyped,
-} from './BibliographyItemValidation';
 import type { EvidenceWeighterResponseWithClaimIndexInput } from './EvidenceWeighterResponseWithClaimIndexInput';
 import {
   EvidenceWeighterResponseWithClaimIndexInputFromJSON,
@@ -129,10 +129,10 @@ export interface ClaimSubstantiatorStateInput {
   references?: Array<BibliographyItem>;
   /**
    *
-   * @type {Array<BibliographyItemValidation>}
+   * @type {Array<BibliographyItemValidationInput>}
    * @memberof ClaimSubstantiatorStateInput
    */
-  referencesValidated?: Array<BibliographyItemValidation>;
+  referencesValidated?: Array<BibliographyItemValidationInput>;
   /**
    *
    * @type {Array<DocumentChunkInput>}
@@ -214,7 +214,7 @@ export function ClaimSubstantiatorStateInputFromJSONTyped(
     referencesValidated:
       json['references_validated'] == null
         ? undefined
-        : (json['references_validated'] as Array<any>).map(BibliographyItemValidationFromJSON),
+        : (json['references_validated'] as Array<any>).map(BibliographyItemValidationInputFromJSON),
     chunks: json['chunks'] == null ? undefined : (json['chunks'] as Array<any>).map(DocumentChunkInputFromJSON),
     errors: json['errors'] == null ? undefined : (json['errors'] as Array<any>).map(WorkflowErrorFromJSON),
     mainDocumentSummary:
@@ -258,7 +258,7 @@ export function ClaimSubstantiatorStateInputToJSONTyped(
     references_validated:
       value['referencesValidated'] == null
         ? undefined
-        : (value['referencesValidated'] as Array<any>).map(BibliographyItemValidationToJSON),
+        : (value['referencesValidated'] as Array<any>).map(BibliographyItemValidationInputToJSON),
     chunks: value['chunks'] == null ? undefined : (value['chunks'] as Array<any>).map(DocumentChunkInputToJSON),
     errors: value['errors'] == null ? undefined : (value['errors'] as Array<any>).map(WorkflowErrorToJSON),
     main_document_summary: DocumentSummaryToJSON(value['mainDocumentSummary']),

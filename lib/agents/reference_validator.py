@@ -25,6 +25,27 @@ from lib.agents.reference_extractor import (
 )
 
 
+class FieldProblemType(str, Enum):
+    CORRECT = "correct"
+    MISSING = "missing"
+    INCORRECT = "incorrect"
+    OTHER = "other"
+
+
+class FieldCategory(str, Enum):
+    AUTHOR = "author"
+    TITLE = "title"
+    PUBLISHER = "publisher"
+    YEAR = "year"
+
+
+class BibliographyFieldValidation(BaseModel):
+    category: FieldCategory = Field(description="Category of the reference.")
+    current_value: str = Field(description="Current value of the reference.")
+    suggested_value: str = Field(description="Suggested value of the reference.")
+    problem_type: FieldProblemType = Field(description="Problem type of the reference.")
+
+
 class BibliographyItemValidation(BaseModel):
     original_reference: BibliographyItem = Field(
         description="Original bibliographic item text."
@@ -32,9 +53,13 @@ class BibliographyItemValidation(BaseModel):
     valid_reference: bool = Field(
         description="Whether the original reference is valid."
     )
-    analysis: str = Field(
-        description="Analysis of the reference in markdown format, following the template provided."
+    bibliography_field_validations: List[BibliographyFieldValidation] = Field(
+        description="List of reference field validations."
     )
+    suggested_action: str = Field(
+        description="Suggested action to take if the reference is not valid. A summary of the suggested changes to make the reference valid. If the reference is valid, return 'No changes needed'."
+    )
+    url: str = Field(description="Found URL for the reference.")
 
 
 class BibliographyValidationResponse(BaseModel):
@@ -49,45 +74,25 @@ You are an expert reference validator. Your task is to validate the list of refe
 by ensuring there is online presence from a legitimate source from each one.
 
 # Reference Field Categories and what to check
-
 - AUTHOR (The author of the reference): Check if all the authors are present and their names are spelled correctly.
 - TITLE (The title of the reference): Check that the title of the reference is correct
 - PUBLISHER (The publisher of the reference): Check that the publisher of the reference matches that online
 - YEAR (The year of the reference): Ensure that the reference year is correct and is a valid year.
 
-# Output Requirements
+# Reference Problem Types
+- CORRECT: The reference field is correct.
+- MISSING: The reference field is missing.
+- INCORRECT: The reference field is incorrect.
+- OTHER: The reference field is other.
 
+# Output Requirements
 - Provide a list of reference item validations.
+- For each reference item validation, provide the category, current value, suggested value, and problem type. If the suggested value is the same as the current value, set the problem type to CORRECT.
 - If all the fields in the reference item validation are correct, set valid_reference to True.
 - If any of the fields in the reference item validation are incorrect, set the valid_reference to False.
 - If the reference is not valid, set the suggested action to a single-sentence action to take to fix the reference. Should be a summary of the suggested changes to make the reference valid.
 
-# Reference Analysis Template
-
-```
-**Suggested action:** [summary of the suggested changes to make the reference valid, if any]
-
-- Authors: [analysis of the authors in the reference]
-- Title: [analysis of the title in the reference]
-- Publisher: [analysis of the publisher in the reference]
-- Year: [analysis of the year in the reference]
-- Found URLs: [list of most relevant URLs of the reference, if found, otherwise empty; separated by commas; maximum of 2 URLs]
-```
-
-Example:
-
-```
-**Suggested action:** Fix the title of the reference to "Unlocking compositional generalization in pretrained models using intermediate representations".
-
-- Authors: All authors are present and their names are spelled correctly.
-- Title: The title of the reference is incorrect, it should be "Unlocking compositional generalization in pretrained models using intermediate representations"
-- Publisher: The publisher of the reference matches that online.
-- Year: The year of the reference is correct and is a valid year.
-- Found URLs: https://arxiv.org/pdf/2511.07221, https://www.rand.org/pubs/research_reports/RR890.html
-```
-
-# Guidelines for checking the reference fields
-
+Guidelines for checking the reference fields:
 - For publisher, abbreviations should be considered equivalent to the full name.
 - For author lists, first and last names should be valid if they are both present. If last name, and first initial are present then those should be valid. Abbreviating remaining authors as "et al." is valid.
 
@@ -96,8 +101,10 @@ Example:
 # NOTE:
 When generating responses, remove or replace all internal citation tokens such as turn1search0, turn2search3, or similar. Do not display raw reference IDs or metadata markers in the final text. Return clean, human-readable output only.
 
-## The list of references to validate
+Return one JSON object matching the schema exactly.
 
+
+## The list of references to validate
 {references}
 """
 )
@@ -180,6 +187,15 @@ if __name__ == "__main__":
             print(
                 f"Is the reference valid? {reference_item_validation.valid_reference}"
             )
-            print(f"Analysis: {reference_item_validation.analysis}")
+            for (
+                reference_field_validation
+            ) in reference_item_validation.bibliography_field_validations:
+                print(f"Category: {reference_field_validation.category}")
+                print(f"Current Value: {reference_field_validation.current_value}")
+                print(f"Suggested Value: {reference_field_validation.suggested_value}")
+                print(f"Problem Type: {reference_field_validation.problem_type}")
+                print("--------------------------------")
+            print(f"Suggested Action: {reference_item_validation.suggested_action}")
+            print(f"URL: {reference_item_validation.url}")
             print("-**********************************-")
             print()
