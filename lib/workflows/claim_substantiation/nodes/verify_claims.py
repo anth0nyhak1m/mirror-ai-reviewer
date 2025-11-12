@@ -32,28 +32,6 @@ _CITATION_PROVIDER = CitationBasedReferenceProvider()
 _RAG_PROVIDER = RAGReferenceProvider()
 
 
-# def _needs_substantiation(chunk: DocumentChunk, claim_index: int) -> bool:
-#     """Check if a claim needs substantiation.
-
-#     A claim needs substantiation if:
-#     1. It has citations in the chunk that need to be verified (regardless of common knowledge status)
-#     2. OR it's not common knowledge and needs supporting evidence
-#     """
-
-#     if chunk.citations and chunk.citations.citations:
-#         return True
-
-#     common_knowledge_result = next(
-#         (
-#             r
-#             for r in chunk.claim_common_knowledge_results
-#             if r.claim_index == claim_index
-#         ),
-#         None,
-#     )
-#     return not common_knowledge_result or common_knowledge_result.needs_substantiation
-
-
 def _needs_external_verification(chunk: DocumentChunk, claim_index: int) -> bool:
     """Check if a claim needs external verification.
 
