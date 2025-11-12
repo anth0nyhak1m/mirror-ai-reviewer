@@ -65,6 +65,14 @@ class AgentTestCase(BaseModel):
     # Evaluator model (provider:model) for LLM comparisons. Keep temperature 0 for determinism.
     evaluator_model: str = Field(default="openai:gpt-5-mini")
 
+    fuzzy_threshold: float = Field(
+        default=0.75, description="Minimum similarity score for fuzzy matches (0-1)"
+    )
+    good_match_threshold: float = Field(
+        default=0.85,
+        description="Score above which matches are considered excellent (0-1)",
+    )
+
     # Stored intermediate eval results
     strict_eval_results: Optional[list[EvaluationResult]] = None
     llm_eval_results: Optional[list[EvaluationResult]] = None
@@ -187,7 +195,12 @@ RECEIVED JSON (selected fields):
         )
 
         # Add field-level comparisons for LLM fields using comparator
-        comparator = FieldComparator(self.llm_fields, self.ignore_fields)
+        comparator = FieldComparator(
+            self.llm_fields,
+            self.ignore_fields,
+            fuzzy_threshold=self.fuzzy_threshold,
+            good_match_threshold=self.good_match_threshold,
+        )
         field_comparisons = comparator.compare_fields(
             self.expected, result, comparison_type="llm"
         )
@@ -206,7 +219,12 @@ RECEIVED JSON (selected fields):
             )
 
         # Use field comparator for detailed analysis
-        comparator = FieldComparator(self.strict_fields, self.ignore_fields)
+        comparator = FieldComparator(
+            self.strict_fields,
+            self.ignore_fields,
+            fuzzy_threshold=self.fuzzy_threshold,
+            good_match_threshold=self.good_match_threshold,
+        )
         field_comparisons = comparator.compare_fields(
             self.expected, result, comparison_type="strict"
         )

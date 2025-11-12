@@ -32,12 +32,18 @@ def _build_cases() -> list[AgentTestCase]:
     for test_case in dataset.items:
         # Load main document from input
         main_path = data_path(test_case.input["main_document"])
-        main_doc = asyncio.run(create_file_document_from_path(main_path))
+
+        if main_path.endswith(".md"):
+            with open(main_path, "r", encoding="utf-8") as f:
+                markdown_content = f.read()
+        else:
+            main_doc = asyncio.run(create_file_document_from_path(main_path))
+            markdown_content = main_doc.markdown
 
         domain = test_case.input.get("domain")
         target_audience = test_case.input.get("target_audience")
         chunk = test_case.input["chunk"]
-        paragraph = extract_paragraph_from_chunk(main_doc.markdown, chunk)
+        paragraph = extract_paragraph_from_chunk(markdown_content, chunk)
 
         cases.append(
             AgentTestCase(
@@ -45,7 +51,6 @@ def _build_cases() -> list[AgentTestCase]:
                 agent=claim_extractor_agent,
                 response_model=ClaimResponse,
                 prompt_kwargs={
-                    "full_document": main_doc.markdown,
                     "paragraph": paragraph,
                     "chunk": chunk,
                     "domain_context": format_domain_context(domain),
