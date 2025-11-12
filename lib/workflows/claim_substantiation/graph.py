@@ -1,9 +1,10 @@
 from langgraph.graph import StateGraph
 
 from lib.workflows.claim_substantiation.nodes.categorize_claims import categorize_claims
-from lib.workflows.claim_substantiation.nodes.check_claim_needs_substantiation import (
-    check_claim_needs_substantiation,
-)
+
+# from lib.workflows.claim_substantiation.nodes.check_claim_needs_substantiation import (
+#     check_claim_needs_substantiation,
+# )
 from lib.workflows.claim_substantiation.nodes.convert_to_markdown import (
     convert_to_markdown,
 )
@@ -83,7 +84,7 @@ def build_claim_substantiator_graph(
     graph.add_node("extract_references", extract_references)
     if run_reference_validation:
         graph.add_node("validate_references", validate_references)
-    graph.add_node("check_claim_needs_substantiation", check_claim_needs_substantiation)
+    # graph.add_node("check_claim_needs_substantiation", check_claim_needs_substantiation)
     graph.add_node("categorize_claims", categorize_claims)
     graph.add_node("validate_inferences", validate_inferences)
 
@@ -124,12 +125,10 @@ def build_claim_substantiator_graph(
     else:
         graph.add_edge("extract_references", "detect_citations")
     graph.add_edge("split_into_chunks", "extract_claims")
-    # NOTE (2025-10-21): Currently going directly from extract_claims to check_claim_needs_substantiation
-    # and then to verify claims;
-    # Later we can likely remove the `check_claim_needs_substantiation` node and just go from  categorize_claims to verify_claims and a future verify_inferences
     graph.add_edge("extract_claims", "categorize_claims")
-    graph.add_edge("categorize_claims", "check_claim_needs_substantiation")
-    graph.add_edge("check_claim_needs_substantiation", "verify_claims")
+    # graph.add_edge("extract_claims", "check_claim_needs_substantiation")
+    graph.add_edge("categorize_claims", "verify_claims")
+    # graph.add_edge("check_claim_needs_substantiation", "verify_claims")
     graph.add_edge("detect_citations", "verify_claims")
 
     # Inference validation runs in parallel with verify_claims after categorization
