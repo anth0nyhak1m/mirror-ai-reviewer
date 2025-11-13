@@ -119,7 +119,7 @@ class ClaimExtractorAgent(AgentProtocol):
     def __init__(self):
         self.llm = init_chat_model(
             gpt_5_mini_model.model_name,
-            temperature=0.0,
+            temperature=0.5,
             timeout=DEFAULT_LLM_TIMEOUT,
         ).with_structured_output(ClaimResponse)
 
