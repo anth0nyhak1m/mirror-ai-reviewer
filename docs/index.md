@@ -60,34 +60,25 @@ The system processes documents through a multi-stage pipeline implemented using 
 
    Each category determination includes an assessment of whether external verification is required, filtering out common knowledge claims that do not necessitate citation.
 
-7. **Claim Verification**: Claims are verified against supporting documents using one of two strategies:
-
-   **Citation-Based Verification**: When citations are present, the system retrieves the full text of cited references and evaluates whether they substantiate the claim. The verification considers:
-
-   - Evidence alignment levels: supported, partially supported, unsupported, or unverifiable
-   - Scope matching between claim and evidence
-   - Tone and strength of language alignment
-   - Factual accuracy of numerical or metric claims
-
-   **RAG-Based Verification**: When citations are absent or incomplete, the system employs retrieval-augmented generation:
+7. **Claim Verification**: Claims are verified against supporting documents using RAG-Based verification:
 
    - Supporting documents are indexed in a vector store using OpenAI's `text-embedding-3-large` embeddings
    - Documents are chunked (2000 characters with 400-character overlap) and embedded
    - For each claim, an enriched query is constructed combining the claim text, chunk context, and relevant backing information
-   - Semantic similarity search retrieves the top-k most relevant passages (k=20) from all supporting documents
-   - Retrieved passages are filtered by cosine distance threshold (≤1.0) and presented to the verification agent
+   - Semantic similarity search retrieves the top-k most relevant passages from all supporting documents
+   - Retrieved passages are ranked by cosine distance and presented to the verification agent
    - The LLM evaluates whether retrieved passages substantiate the claim
 
 8. **Inference Validation**: Claims identified as inferential or interpretive are analyzed to detect potential logical fallacies, unsupported leaps, or missing intermediate reasoning steps.
 
-9. **Literature Review** (optional): The system can conduct automated literature reviews by:
+9. **Literature Review**: The system conducts automated literature reviews by:
 
    - Searching external sources for supporting or conflicting evidence
    - Identifying newer publications relevant to the claims
    - Evaluating reference quality and source credibility
    - Recommending citation additions, replacements, or discussions
 
-10. **Citation Suggestion** (optional): For claims lacking citations, the system suggests relevant references from the document's bibliography or external sources, considering:
+10. **Citation Suggestion**: For claims lacking citations, the system suggests relevant references from the document's bibliography or external sources, considering:
     - Relevance to the claim
     - Source quality and credibility
     - Publication recency
