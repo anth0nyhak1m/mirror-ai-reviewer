@@ -4,13 +4,16 @@ from pathlib import Path
 import pytest
 
 from lib.models.agent_test_case import AgentTestCase
-from lib.services.file import create_file_document_from_path
 from lib.agents.claim_extractor import (
     ClaimResponse,
     claim_extractor_agent,
 )
 from lib.agents.formatting_utils import format_domain_context, format_audience_context
-from tests.conftest import data_path, extract_paragraph_from_chunk
+from tests.conftest import (
+    create_test_file_document_from_path,
+    data_path,
+    extract_paragraph_from_chunk,
+)
 from tests.datasets.loader import load_dataset
 
 
@@ -32,18 +35,12 @@ def _build_cases() -> list[AgentTestCase]:
     for test_case in dataset.items:
         # Load main document from input
         main_path = data_path(test_case.input["main_document"])
-
-        if main_path.endswith(".md"):
-            with open(main_path, "r", encoding="utf-8") as f:
-                markdown_content = f.read()
-        else:
-            main_doc = asyncio.run(create_file_document_from_path(main_path))
-            markdown_content = main_doc.markdown
+        main_doc = asyncio.run(create_test_file_document_from_path(main_path))
 
         domain = test_case.input.get("domain")
         target_audience = test_case.input.get("target_audience")
         chunk = test_case.input["chunk"]
-        paragraph = extract_paragraph_from_chunk(markdown_content, chunk)
+        paragraph = extract_paragraph_from_chunk(main_doc.markdown, chunk)
 
         cases.append(
             AgentTestCase(
