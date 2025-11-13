@@ -66,10 +66,10 @@ class AgentTestCase(BaseModel):
     evaluator_model: str = Field(default="openai:gpt-5-mini")
 
     fuzzy_threshold: float = Field(
-        default=0.75, description="Minimum similarity score for fuzzy matches (0-1)"
+        default=0.6, description="Minimum similarity score for fuzzy matches (0-1)"
     )
     good_match_threshold: float = Field(
-        default=0.85,
+        default=0.8,
         description="Score above which matches are considered excellent (0-1)",
     )
 

@@ -59,6 +59,8 @@ def _build_cases() -> list[AgentTestCase]:
                 expected_dict=test_case.expected_output,
                 strict_fields=strict_fields,
                 llm_fields=llm_fields,
+                fuzzy_threshold=0.75,
+                good_match_threshold=0.85,
             )
         )
 
