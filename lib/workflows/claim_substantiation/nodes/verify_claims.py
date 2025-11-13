@@ -15,6 +15,7 @@ from lib.workflows.claim_substantiation.reference_providers import (
     CitationBasedReferenceProvider,
     RAGReferenceProvider,
     ReferenceProvider,
+    get_all_paragraph_citations,
 )
 from lib.workflows.claim_substantiation.state import (
     ClaimSubstantiatorState,
@@ -32,22 +33,33 @@ _CITATION_PROVIDER = CitationBasedReferenceProvider()
 _RAG_PROVIDER = RAGReferenceProvider()
 
 
-def _needs_external_verification(chunk: DocumentChunk, claim_index: int) -> bool:
-    """Check if a claim needs external verification.
+def _needs_substantiation(
+    state: ClaimSubstantiatorState, chunk: DocumentChunk, claim_index: int
+) -> bool:
+    """
+    Check if a claim needs substantiation.
 
-    A claim needs external verification if:
-    1. It has citations in the chunk that need to be verified
-    2. It has a category that requires external verification
+    A claim needs substantiation if:
+    1. It has citations in the chunk that need to be verified OR in the paragraph that includes the chunk; AND
+    2. It needs external verification (or if categorization didn't happen, consider all claims need external verification)
     """
 
-    if chunk.citations and chunk.citations.citations:
-        return True
+    paragraph_citations = get_all_paragraph_citations(state, chunk)
+    if len(paragraph_citations) == 0:
+        # If there's no citations in the paragraph, skip verification since there's no document to verify against
+        return False
 
-    category = next(
+    claim_category = next(
         (c for c in chunk.claim_categories if c.claim_index == claim_index),
         None,
     )
-    return category and category.needs_external_verification
+
+    if not claim_category:
+        # In case categorization didn't happen, force verification (consider all claims need external verification)
+        return True
+
+    # If the claim needs external verification, verify it
+    return claim_category.needs_external_verification
 
 
 async def _verify_chunk_claims_with_provider(
@@ -70,9 +82,9 @@ async def _verify_chunk_claims_with_provider(
     substantiations = []
 
     for claim_index, claim in enumerate(chunk.claims.claims):
-        if not _needs_external_verification(chunk, claim_index):
+        if not _needs_substantiation(state, chunk, claim_index):
             logger.debug(
-                f"verify_chunk_claims_with_provider: Chunk {chunk.chunk_index} claim {claim_index} does not need external verification, skipping verification"
+                f"Chunk {chunk.chunk_index} claim {claim_index} does not need external verification, skipping verification"
             )
             continue
 
