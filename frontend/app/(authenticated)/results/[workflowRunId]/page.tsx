@@ -1,13 +1,11 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { EditableTitle } from '@/components/ui/editable-title';
 import { ResultsVisualization } from '@/components/wizard/results-step/results-visualization';
 import { workflowsApi } from '@/lib/api';
 import { ChunkReevaluationResponse, WorkflowRunDetailed, WorkflowRunStatus } from '@/lib/generated-api';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -81,14 +79,10 @@ export default function ResultsPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="container mx-auto px-4 py-12 max-w-6xl">
-          <div className="flex items-center justify-center">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-muted-foreground">Loading workflow run...</p>
-            </div>
-          </div>
+      <div className="flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading workflow run...</p>
         </div>
       </div>
     );
@@ -96,13 +90,9 @@ export default function ResultsPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="container mx-auto px-4 py-12 max-w-6xl">
-          <div className="flex items-center justify-center">
-            <div className="text-center">
-              <p className="text-destructive mb-4">{error.message}</p>
-            </div>
-          </div>
+      <div className="flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">{error.message}</p>
         </div>
       </div>
     );
@@ -113,31 +103,26 @@ export default function ResultsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
-      <div className="container mx-auto px-4 py-12 max-w-6xl">
-        <div className="flex items-center justify-between mb-6 gap-4">
-          <hgroup className="w-full">
-            <EditableTitle
-              title={workflowRun.run.title}
-              titleClassName="text-2xl font-bold"
-              onSave={handleTitleSave}
-              isLoading={updateTitleMutation.isPending}
-            />
-            <h2 className="text-muted-foreground text-sm">
-              Workflow Run Results · Created on {format(workflowRun.run.createdAt || new Date(), 'MMM d, yyyy')}
-            </h2>
-          </hgroup>
-          <Link href="/">
-            <Button variant="outline">Back to Home</Button>
-          </Link>
-        </div>
-
-        <ResultsVisualization
-          results={workflowRun.state || undefined}
-          onChunkReevaluation={handleChunkReevaluation}
-          isProcessing={isProcessing}
-        />
+    <>
+      <div className="mb-6">
+        <hgroup className="w-full space-y-1">
+          <EditableTitle
+            title={workflowRun.run.title}
+            titleClassName="text-xl font-bold"
+            onSave={handleTitleSave}
+            isLoading={updateTitleMutation.isPending}
+          />
+          <h2 className="text-muted-foreground text-sm">
+            Workflow Run Results · Created on {format(workflowRun.run.createdAt || new Date(), 'MMM d, yyyy')}
+          </h2>
+        </hgroup>
       </div>
-    </div>
+
+      <ResultsVisualization
+        results={workflowRun.state || undefined}
+        onChunkReevaluation={handleChunkReevaluation}
+        isProcessing={isProcessing}
+      />
+    </>
   );
 }
