@@ -90,18 +90,7 @@ The system processes documents through a multi-stage pipeline implemented using 
 
 ### Technical Architecture
 
-**Agent-Based Design**: The system employs a registry-based agent architecture where specialized agents handle distinct tasks:
-
-- Claim extraction agent
-- Citation detection agent
-- Claim categorization agent
-- Claim verification agent (with citation-based and RAG-based variants)
-- Reference extraction agent
-- Literature review agent
-- Citation suggestion agent
-- Evidence weighting agent
-
-Each agent implements a common protocol, enabling dynamic composition and replacement of components.
+**Agent-Based Design**: The system employs a registry-based agent architecture where specialized agents handle distinct tasks. Each agent implements a common protocol, enabling dynamic composition and replacement of components.
 
 **Workflow Orchestration**: LangGraph manages the execution flow, supporting:
 
@@ -163,7 +152,13 @@ The example below demonstrates the system's capability to assess claim-evidence 
 
 ### References Validation
 
-TODO: show screenshot of examples of results
+The following example demonstrates the system's reference validation capabilities when presented with a fabricated bibliographic entry. The validation agent systematically evaluates the reference's metadata fields (author, title, publication year, publisher) against online sources and correctly identifies the reference as invalid due to the absence of corresponding published work.
+
+![Reference Validation - Example 1](./ref-validation-ex1.png)
+
+The subsequent example illustrates a more nuanced validation scenario involving a legitimate reference with verifiable online presence. The system detects a discrepancy between the title field in the provided reference and the actual publication title found in online databases.
+
+![Reference Validation - Example 2](./ref-validation-ex2.png)
 
 ### Missing Substantiation
 
