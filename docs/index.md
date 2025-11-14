@@ -144,6 +144,8 @@ The system follows a containerized architecture consisting of three primary cont
 
 ## Results
 
+_Note: The following examples represent excerpts extracted from complete document analyses conducted during actual system evaluations. While these excerpts are presented in isolation for clarity and illustrative purposes, it should be noted that the agents operate within the full document context, where paragraph-level and document-level contextual information significantly influences claim extraction, citation association, and verification outcomes._
+
 ### Claim-Reference Alignment
 
 The example below demonstrates the system's capability to assess claim-evidence alignment across different levels of substantiation. Three variations of a sentence extracted from a research document are evaluated: (1) the original sentence, classified as "partially supported" due to a minor overstatement in its claims; (2) a modified version containing explicit contradictions with the cited evidence, correctly identified as "unsupported"; and (3) a refined version with softened language that aligns more precisely with the evidence, classified as "supported". This illustrates the system's sensitivity to subtle variations in claim strength and its ability to distinguish between different degrees of evidentiary support.
@@ -162,7 +164,9 @@ The subsequent example illustrates a more nuanced validation scenario involving 
 
 ### Missing Substantiation
 
-TODO: show screenshot of examples of results
+The following example demonstrates the system's capability to identify claims that lack appropriate evidentiary support. The system evaluates sentences containing assertions that require citation but are not substantiated by references, and distinguishes these from universally accepted common knowledge that does not necessitate citation. The system classifies such claims as "unsupported" when they represent factual assertions, empirical findings, or domain-specific knowledge that would typically require attribution. Notably, the system performs granular claim-level analysis, as illustrated in the second example where multiple distinct claims are extracted from a single sentence and evaluated independently, enabling precise identification of unsupported assertions within complex statements.
+
+![Unsupported claims - Example 1](./unsupported-claim-ex1.png)
 
 ### Citation Recommendations
 
@@ -174,7 +178,9 @@ TODO: show screenshot of examples of results
 
 ### Live Reports
 
-TODO: show screenshot of examples of results
+The following example demonstrates the system's "live reports" capabilities for published documents. The system analyzed RAND's research article "[Understanding the Artificial Intelligence Diffusion Framework](https://www.rand.org/pubs/perspectives/PEA3776-1.html)" (published January 2025) and successfully identified that the framework was rescinded on May 13, 2025. This illustrates the system's ability to detect post-publication changes, retractions, and evolving information that may affect the document's current validity or relevance.
+
+![Live Reports - Example 1](./live-reports-ex1.png)
 
 ## Limitations and Considerations
 
@@ -189,7 +195,3 @@ TODO: show screenshot of examples of results
 5. **Citation Proximity**: The system associates citations with claims based on paragraph-level proximity. In cases where citations are distant from their claims, associations may be incorrect.
 
 6. **Processing Scale**: Large documents with many claims require significant computational resources. The system supports selective re-evaluation of specific chunks to optimize resource usage.
-
----
-
-_This documentation describes the system's scientific and technical approach. For development setup and usage instructions, see the README and DEVELOPMENT files in the [GitHub repository](https://github.com/agencyenterprise/ai-reviewer)._
