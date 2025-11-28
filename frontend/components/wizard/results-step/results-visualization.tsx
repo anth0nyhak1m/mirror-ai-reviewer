@@ -13,13 +13,21 @@ import { ReevaluationDialogContent, ReevaluationFormValues } from './components/
 import { ViewModeToggle } from './components/view-mode-toggle';
 import { TabType } from './constants';
 import { useResultsCalculations } from './hooks/use-results-calculations';
-import { FilesTab, LiteratureReviewTab, LiveReportsTab, ReferencesTab, SummaryTab } from './tabs';
+import {
+  FilesTab,
+  LiteratureReviewTab,
+  LiveReportsTab,
+  ReferencesTab,
+  SummaryTab,
+  MethodologicalAlignmentTab,
+} from './tabs';
 import { DocumentExplorerTab } from './tabs/document-explorer-tab';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { analysisApi } from '@/lib/api';
 
 interface ResultsVisualizationProps {
+  projectId: string;
   results: ClaimSubstantiatorStateSummary | undefined;
   isProcessing?: boolean;
   viewMode: DocRenderMode;
@@ -29,6 +37,7 @@ interface ResultsVisualizationProps {
 }
 
 export function ResultsVisualization({
+  projectId,
   results,
   isProcessing = false,
   viewMode,
@@ -50,10 +59,10 @@ export function ResultsVisualization({
 
       // Invalidate queries to show loading state
       client.invalidateQueries({
-        queryKey: ['chunkDetails', variables.workflowRunId],
+        queryKey: ['chunkDetails'],
       });
       client.invalidateQueries({
-        queryKey: ['workflowRun', variables.workflowRunId],
+        queryKey: ['project', variables.projectId],
       });
     },
     onError: (error) => {
@@ -80,7 +89,7 @@ export function ResultsVisualization({
 
   const handleReevaluate = (values: ReevaluationFormValues) => {
     reevaluateMutation.mutate({
-      workflowRunId: results?.workflowRunId ?? '',
+      projectId,
       config: {
         ...results?.config,
         targetChunkIndices: values.targetChunkIndices,
@@ -126,7 +135,16 @@ export function ResultsVisualization({
       case 'files':
         return <FilesTab results={results} />;
       case 'document-explorer':
-        return <DocumentExplorerTab results={results} isProcessing={isProcessing} viewMode={viewMode} />;
+        return (
+          <DocumentExplorerTab
+            projectId={projectId}
+            results={results}
+            isProcessing={isProcessing}
+            viewMode={viewMode}
+          />
+        );
+      case 'methodological_alignment':
+        return <MethodologicalAlignmentTab results={results} isProcessing={isProcessing} />;
     }
   };
 
