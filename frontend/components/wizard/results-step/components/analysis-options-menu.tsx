@@ -10,8 +10,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { useShareStatus } from '@/hooks/use-share-status';
-import { WorkflowRunType } from '@/lib/generated-api';
-import { getWorkflowRunByType, WorkflowRunDetail } from '@/lib/workflow-state';
+import { WorkflowRunDetail, WorkflowRunType } from '@/lib/generated-api';
+import { getWorkflowRunByType } from '@/lib/workflow-state';
 import { Download, EllipsisVerticalIcon, FileTextIcon, Link, RefreshCcwIcon } from 'lucide-react';
 import { useDownloadDocx } from './use-download-docx';
 
@@ -27,7 +27,7 @@ export function AnalysisOptionsMenu({ onSaveAsEvalTest, onReevaluate, projectId,
   const { download, isDownloading } = useDownloadDocx(projectId);
 
   const claimSubstantiationResults = getWorkflowRunByType(results, WorkflowRunType.ClaimSubstantiation);
-  const hasDocx = claimSubstantiationResults?.state?.file?.originalFilePath?.endsWith('.docx');
+  const hasDocx = claimSubstantiationResults?.state?.file?.original_file_path?.endsWith('.docx');
 
   return (
     <>
